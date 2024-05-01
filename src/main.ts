@@ -1,8 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
-import * as fs from 'fs'
-import axios from 'axios'
 
 /**
  * The main function for the action.
@@ -27,21 +25,11 @@ export async function run(): Promise<void> {
     if (!asset || !asset.browser_download_url) {
       throw new Error('Unable to find the asset in the release.')
     }
-    console.log(asset)
-    // Download the asset
-    const response = await axios.get(asset.browser_download_url, {
-      responseType: 'arraybuffer',
-      headers: {
-        Authorization: `Token ${pat}`,
-        Accept: 'application/octet-stream'
-      }
-    })
 
-    // Write the downloaded data to a file
-    fs.writeFileSync(asset.name, response.data)
-
-    // Extract the file
-    await exec.exec(`tar -zxvf ${asset.name}`)
+    // Download the asset using wget
+    await exec.exec(
+      `curl -o "${asset.name}" -H "Accept: application/octet-stream" ${asset.browser_download_url}?access_token=${pat}`
+    )
 
     // Execute ls -la and log the output
     let output = ''
@@ -52,8 +40,11 @@ export async function run(): Promise<void> {
         }
       }
     }
-    await exec.exec('ls -la', [], options)
+    await exec.exec('ls -la', [asset.name], options)
     console.log(output)
+
+    await exec.exec(`file ${asset.name}`)
+    await exec.exec(`cat ${asset.name}`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
