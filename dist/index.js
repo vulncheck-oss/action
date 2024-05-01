@@ -29239,6 +29239,7 @@ async function run() {
         });
         // walk through release.assets and look for  vc_*_linux_amd64.tar.gz
         const asset = release.assets.find(a => a.name.match(/vc_.*_linux_amd64.tar.gz/));
+        console.log('our asset below');
         console.log(asset);
     }
     catch (error) {

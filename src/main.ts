@@ -20,6 +20,7 @@ export async function run(): Promise<void> {
     const asset = release.assets.find(a =>
       a.name.match(/vc_.*_linux_amd64.tar.gz/)
     )
+    console.log('our asset below')
     console.log(asset)
   } catch (error) {
     // Fail the workflow run if an error occurs
