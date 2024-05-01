@@ -7,12 +7,9 @@ import * as github from '@actions/github'
  */
 export async function run(): Promise<void> {
   try {
-    const token = core.getInput('token', { required: true })
-
-    core.debug(`token: ${token}`)
-
-    /*
-    const octokit = github.getOctokit({auth: token})
+    // const token = core.getInput('token', { required: true })
+    const pat = core.getInput('cli_pat', { required: true })
+    const octokit = github.getOctokit(pat)
 
     const { data: release } = await octokit.rest.repos.getLatestRelease({
       owner: 'vulncheck-oss',
@@ -21,7 +18,6 @@ export async function run(): Promise<void> {
 
     console.log(release)
     core.debug(`release ${release.tag_name}`)
-    */
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
