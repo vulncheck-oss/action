@@ -33978,11 +33978,12 @@ async function run() {
         if (!asset || !asset.browser_download_url) {
             throw new Error('Unable to find the asset in the release.');
         }
+        console.log(asset);
         // Download the asset
         const response = await axios_1.default.get(asset.browser_download_url, {
             responseType: 'arraybuffer',
             headers: {
-                Authorization: `token ${pat}`,
+                Authorization: `Token ${pat}`,
                 Accept: 'application/octet-stream'
             }
         });
