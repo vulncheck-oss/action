@@ -40,13 +40,10 @@ export async function run(): Promise<void> {
         }
       }
     }
-    await exec.exec('ls -la', [], options)
+    await exec.exec('ls -la', [asset.name], options)
     console.log(output)
 
-    await exec.exec(`tar zxvf ${asset.name}`)
-
-    await exec.exec('ls -la', [], options)
-    console.log(output)
+    await exec.exec(`file ${asset.name}`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
