@@ -13,11 +13,11 @@ export async function run(): Promise<void> {
 
     const { data: release } = await octokit.rest.repos.getLatestRelease({
       owner: 'vulncheck-oss',
-      repo: 'cli',
+      repo: 'cli'
     })
 
     console.log(release)
-    core.debug("release: " + release.tag_name)
+    core.debug('release: ' + release.tag_name)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
