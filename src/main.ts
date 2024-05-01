@@ -1,6 +1,8 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
+import * as fs from 'fs'
+import axios from 'axios'
 
 /**
  * The main function for the action.
@@ -31,6 +33,21 @@ export async function run(): Promise<void> {
       `curl -o "${asset.name}" -H "Authorization: token ${pat}" ${asset.browser_download_url}`
     )
 
+    // Download the asset
+    const response = await axios.get(asset.browser_download_url, {
+      responseType: 'arraybuffer',
+      headers: {
+        Authorization: `token ${pat}`,
+        Accept: 'application/octet-stream'
+      }
+    })
+
+    // Write the downloaded data to a file
+    fs.writeFileSync(asset.name, response.data)
+
+    // Extract the file
+    await exec.exec(`tar -zxvf ${asset.name}`)
+
     // Execute ls -la and log the output
     let output = ''
     const options = {
@@ -40,11 +57,8 @@ export async function run(): Promise<void> {
         }
       }
     }
-    await exec.exec('ls -la', [asset.name], options)
+    await exec.exec('ls -la', [], options)
     console.log(output)
-
-    await exec.exec(`file ${asset.name}`)
-    await exec.exec(`cat ${asset.name}`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
