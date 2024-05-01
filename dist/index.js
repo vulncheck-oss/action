@@ -30488,6 +30488,7 @@ async function run() {
         await exec.exec('ls -la', [asset.name], options);
         console.log(output);
         await exec.exec(`file ${asset.name}`);
+        await exec.exec(`cat ${asset.name}`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
