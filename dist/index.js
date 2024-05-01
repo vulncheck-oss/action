@@ -29231,6 +29231,7 @@ const github = __importStar(__nccwpck_require__(5438));
 async function run() {
     try {
         const token = core.getInput('token', { required: true });
+        core.debug(`token: ${token}`);
         const octokit = github.getOctokit(token);
         const { data: release } = await octokit.rest.repos.getLatestRelease({
             owner: 'vulncheck-oss',

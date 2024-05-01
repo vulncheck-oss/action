@@ -9,6 +9,8 @@ export async function run(): Promise<void> {
   try {
     const token = core.getInput('token', { required: true })
 
+    core.debug(`token: ${token}`)
+
     const octokit = github.getOctokit(token)
 
     const { data: release } = await octokit.rest.repos.getLatestRelease({
