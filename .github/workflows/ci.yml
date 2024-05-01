@@ -57,7 +57,8 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
+          cli_pat: ${{ secrets.CLI_PAT }}
+          token: ${{ secrets.VC_TOKEN }}
 
       - name: Print Output
         id: output
