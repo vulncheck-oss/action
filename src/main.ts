@@ -27,12 +27,6 @@ export async function run(): Promise<void> {
     if (!asset || !asset.browser_download_url) {
       throw new Error('Unable to find the asset in the release.')
     }
-
-    // Download the asset using wget
-    await exec.exec(
-      `curl -o "${asset.name}" -H "Authorization: token ${pat}" ${asset.browser_download_url}`
-    )
-
     // Download the asset
     const response = await axios.get(asset.browser_download_url, {
       responseType: 'arraybuffer',
