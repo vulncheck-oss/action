@@ -16,8 +16,11 @@ export async function run(): Promise<void> {
       repo: 'cli'
     })
 
-    console.log(release)
-    core.debug(`release ${release.tag_name}`)
+    // walk through release.assets and look for  vc_*_linux_amd64.tar.gz
+    const asset = release.assets.find(a =>
+      a.name.match(/vc_.*_linux_amd64.tar.gz/)
+    )
+    console.log(asset)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
