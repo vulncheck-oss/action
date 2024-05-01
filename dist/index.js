@@ -30475,7 +30475,7 @@ async function run() {
             throw new Error('Unable to find the asset in the release.');
         }
         // Download the asset using wget
-        await exec.exec(`wget -q -O ${asset.name} -H "Authorization: token ${pat}" ${asset.browser_download_url}`);
+        await exec.exec(`curl -o "${asset.name} -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`);
         // Extract the file
         await exec.exec(`tar -zxvf ${asset.name}`);
         // Execute ls -la and log the output
