@@ -28,7 +28,7 @@ export async function run(): Promise<void> {
 
     // Download the asset using wget
     await exec.exec(
-      `curl -o "${asset.name} -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`
+      `curl -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`
     )
 
     // Extract the file
