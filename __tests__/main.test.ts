@@ -33,8 +33,5 @@ describe('action', () => {
     setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
   })
 
-  it('test placeholder', async () => {
-  })
-
- 
+  it('test placeholder', async () => {})
 })
