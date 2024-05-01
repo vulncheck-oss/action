@@ -31,9 +31,6 @@ export async function run(): Promise<void> {
       `curl -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`
     )
 
-    // Extract the file
-    await exec.exec(`tar -zxvf ${asset.name}`)
-
     // Execute ls -la and log the output
     let output = ''
     const options = {
@@ -45,6 +42,8 @@ export async function run(): Promise<void> {
     }
     await exec.exec('ls -la', [], options)
     console.log(output)
+    // Extract the file
+    await exec.exec(`tar -zxvf ${asset.name}`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

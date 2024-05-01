@@ -30476,8 +30476,6 @@ async function run() {
         }
         // Download the asset using wget
         await exec.exec(`curl -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`);
-        // Extract the file
-        await exec.exec(`tar -zxvf ${asset.name}`);
         // Execute ls -la and log the output
         let output = '';
         const options = {
@@ -30489,6 +30487,8 @@ async function run() {
         };
         await exec.exec('ls -la', [], options);
         console.log(output);
+        // Extract the file
+        await exec.exec(`tar -zxvf ${asset.name}`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
