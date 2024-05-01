@@ -28,7 +28,7 @@ export async function run(): Promise<void> {
 
     // Download the asset using wget
     await exec.exec(
-      `curl -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`
+      `curl -o "${asset.name}" -H "Authorization: token ${pat}" ${asset.browser_download_url}`
     )
 
     // Execute ls -la and log the output
@@ -42,8 +42,11 @@ export async function run(): Promise<void> {
     }
     await exec.exec('ls -la', [], options)
     console.log(output)
-    // Extract the file
-    await exec.exec(`tar -zxvf ${asset.name}`)
+
+    await exec.exec(`tar zxvf ${asset.name}`)
+
+    await exec.exec('ls -la', [], options)
+    console.log(output)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

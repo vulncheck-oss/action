@@ -30475,7 +30475,7 @@ async function run() {
             throw new Error('Unable to find the asset in the release.');
         }
         // Download the asset using wget
-        await exec.exec(`curl -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`);
+        await exec.exec(`curl -o "${asset.name}" -H "Authorization: token ${pat}" ${asset.browser_download_url}`);
         // Execute ls -la and log the output
         let output = '';
         const options = {
@@ -30487,8 +30487,9 @@ async function run() {
         };
         await exec.exec('ls -la', [], options);
         console.log(output);
-        // Extract the file
-        await exec.exec(`tar -zxvf ${asset.name}`);
+        await exec.exec(`tar zxvf ${asset.name}`);
+        await exec.exec('ls -la', [], options);
+        console.log(output);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
