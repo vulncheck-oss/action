@@ -1,24 +1,23 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
-
-# Add your action's branding here. This will appear on the GitHub Marketplace.
+name: 'VulnCheck Actions'
+description: 'Integrate VulnCheck into your GitHub Actions workflow'
+author: 'Kevin Olson <kolson@vulncheck.com>'
 branding:
-  icon: 'heart'
-  color: 'red'
+    icon: 'shield'
+    color: gray-dark
 
-# Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  token:
+    description: 'VulnCheck Token'
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: 'Your output description here'
-
+  cli_pat:
+    description: 'A token with access to the CLI'
+    required: true
+  scan_cvss_base_threshold:
+    description: 'CVSS Threshold to fail the workflow'
+    required: false
+  scan_cvss_temporal_threshold:
+    description: 'CVSS Temporal Threshold to fail the workflow'
+    required: false
 runs:
   using: node20
   main: dist/index.js
