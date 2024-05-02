@@ -29,18 +29,9 @@ export async function run(): Promise<void> {
 
     console.log(`Asset Download URL: ${asset.browser_download_url}`) // Debugging line
 
-    // Download the asset
-    const response = await axios.get(asset.browser_download_url, {
-      responseType: 'arraybuffer',
-      headers: {
-        Authorization: `token ${pat}`,
-        Accept: 'application/octet-stream'
-      }
-    })
-
-    // response.data is an ArrayBuffer, save this as a file
-
-    console.log(response)
+    await exec.exec(
+      `curl -vLJO -H 'Authorization: token ${pat}' 'https://api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id}'`
+    )
 
     // Execute ls -la and log the output
     let output = ''
@@ -51,7 +42,7 @@ export async function run(): Promise<void> {
         }
       }
     }
-    await exec.exec('ls -la', [asset.name], options)
+    await exec.exec('ls -la', [], options)
     console.log(output)
 
     await exec.exec(`file ${asset.name}`)
