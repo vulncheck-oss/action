@@ -33957,7 +33957,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.install = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
-const exec = __importStar(__nccwpck_require__(1514));
+const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(7147));
 /**
  * Install the latest release of the VulnCheck CLI
@@ -33984,11 +33984,11 @@ async function install({ pat, owner, repo, }) {
         },
     });
     fs.writeFileSync(asset.name, response.data);
-    await exec.exec(`tar zxvf ${asset.name}`);
-    await exec.exec(`rm ${asset.name}`);
-    await exec.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
-    await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
-    await exec.exec(`vc version`);
+    await (0, exec_1.exec)(`tar zxvf ${asset.name}`);
+    await (0, exec_1.exec)(`rm ${asset.name}`);
+    await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
+    await (0, exec_1.exec)(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
+    await (0, exec_1.exec)(`vc version`);
 }
 exports.install = install;
 
@@ -34027,6 +34027,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const install_1 = __nccwpck_require__(1649);
+const scan_1 = __nccwpck_require__(8981);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -34034,11 +34035,15 @@ const install_1 = __nccwpck_require__(1649);
 async function run() {
     try {
         const pat = core.getInput('cli_pat', { required: true });
+        const command = core.getInput('command');
         await (0, install_1.install)({
             pat,
             owner: 'vulncheck-oss',
             repo: 'cli',
         });
+        if (command === 'scan') {
+            await (0, scan_1.scan)();
+        }
     }
     catch (error) {
         // Fail the workflow run if an error occurs
@@ -34047,6 +34052,49 @@ async function run() {
     }
 }
 exports.run = run;
+
+
+/***/ }),
+
+/***/ 8981:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.scan = void 0;
+const exec_1 = __nccwpck_require__(1514);
+const core = __importStar(__nccwpck_require__(2186));
+async function scan() {
+    core.info('Running CLI command: scan');
+    const { stdout } = await (0, exec_1.getExecOutput)('vc scan . --json');
+    const result = JSON.parse(stdout);
+    console.log(result);
+}
+exports.scan = scan;
 
 
 /***/ }),

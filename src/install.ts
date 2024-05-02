@@ -1,6 +1,6 @@
 import * as github from '@actions/github'
 import axios from 'axios'
-import * as exec from '@actions/exec'
+import { exec } from '@actions/exec'
 import * as fs from 'fs'
 
 /**
@@ -43,11 +43,11 @@ export async function install({
   })
 
   fs.writeFileSync(asset.name, response.data)
-  await exec.exec(`tar zxvf ${asset.name}`)
-  await exec.exec(`rm ${asset.name}`)
-  await exec.exec(
+  await exec(`tar zxvf ${asset.name}`)
+  await exec(`rm ${asset.name}`)
+  await exec(
     `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`,
   )
-  await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
-  await exec.exec(`vc version`)
+  await exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
+  await exec(`vc version`)
 }

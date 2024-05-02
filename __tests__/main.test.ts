@@ -43,6 +43,8 @@ describe('action', () => {
       switch (name) {
         case 'cli_pat':
           return 'foo'
+        case 'command':
+          return 'scan'
         default:
           return ''
       }

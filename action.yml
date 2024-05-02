@@ -12,6 +12,9 @@ inputs:
   cli_pat:
     description: 'A token with access to the CLI'
     required: true
+  command:
+    description: 'Command to run'
+    default: 'scan'
   scan_cvss_base_threshold:
     description: 'CVSS Threshold to fail the workflow'
     required: false

@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import { install } from './install'
+import { scan } from './scan'
 
 /**
  * The main function for the action.
@@ -8,12 +9,17 @@ import { install } from './install'
 export async function run(): Promise<void> {
   try {
     const pat = core.getInput('cli_pat', { required: true })
+    const command = core.getInput('command')
 
     await install({
       pat,
       owner: 'vulncheck-oss',
       repo: 'cli',
     })
+
+    if (command === 'scan') {
+      await scan()
+    }
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
