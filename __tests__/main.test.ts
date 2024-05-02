@@ -8,6 +8,7 @@
 
 import * as core from '@actions/core'
 import * as main from '../src/main'
+import * as installModule from '../src/install'
 
 // Mock the action's main function
 const runMock = jest.spyOn(main, 'run')
@@ -31,6 +32,10 @@ describe('action', () => {
     getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
     // setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
     // setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
+
+    // Create a mock of the install function
+    const installMock = jest.spyOn(installModule, 'install')
+    installMock.mockImplementation(async () => {})
   })
 
   it('test placeholder', async () => {
@@ -42,6 +47,12 @@ describe('action', () => {
           return ''
       }
     })
+
+    // Mock the install function to be a no-op
+    const installMock = installModule.install as jest.MockedFunction<
+      typeof installModule.install
+    >
+    installMock.mockImplementation(async () => {})
 
     await main.run()
     expect(runMock).toHaveReturned()
