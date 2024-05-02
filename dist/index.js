@@ -33981,7 +33981,7 @@ async function run() {
         const response = await axios_1.default.get(asset.url, {
             responseType: 'arraybuffer',
             headers: {
-                Accept: '*/*',
+                Accept: 'application/octet-stream',
                 Authorization: `token ${pat}`,
             },
         });
