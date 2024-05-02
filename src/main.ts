@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
+import axios from 'axios'
 
 /**
  * The main function for the action.
@@ -26,11 +27,18 @@ export async function run(): Promise<void> {
       throw new Error('Unable to find the asset in the release.')
     }
 
-    const response = await octokit.rest.repos.downloadTarballArchive({
-      owner: 'vulncheck-oss',
-      repo: 'cli',
-      ref: 'main'
+    console.log(`Asset Download URL: ${asset.browser_download_url}`) // Debugging line
+
+    // Download the asset
+    const response = await axios.get(asset.browser_download_url, {
+      responseType: 'arraybuffer',
+      headers: {
+        Authorization: `token ${pat}`,
+        Accept: 'application/octet-stream'
+      }
     })
+
+    // response.data is an ArrayBuffer, save this as a file
 
     console.log(response)
 
