@@ -8,8 +8,9 @@ import { scan } from './scan'
  */
 export async function run(): Promise<void> {
   try {
-    const pat = core.getInput('cli_pat', { required: true })
     const command = core.getInput('command')
+    const pat = core.getInput('cli_pat', { required: true })
+    process.env.VC_TOKEN = core.getInput('token', { required: true })
 
     await install({
       pat,

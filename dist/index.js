@@ -34034,8 +34034,9 @@ const scan_1 = __nccwpck_require__(8981);
  */
 async function run() {
     try {
-        const pat = core.getInput('cli_pat', { required: true });
         const command = core.getInput('command');
+        const pat = core.getInput('cli_pat', { required: true });
+        process.env.VC_TOKEN = core.getInput('token', { required: true });
         await (0, install_1.install)({
             pat,
             owner: 'vulncheck-oss',
