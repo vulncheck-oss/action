@@ -33954,49 +33954,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.install = exports.downloadAsset = exports.findAsset = exports.getLatestRelease = void 0;
+exports.install = void 0;
 const github = __importStar(__nccwpck_require__(5438));
 const axios_1 = __importDefault(__nccwpck_require__(8757));
 const exec = __importStar(__nccwpck_require__(1514));
 const fs = __importStar(__nccwpck_require__(7147));
-async function getLatestRelease(octokit, owner, repo) {
+/**
+ * Install the latest release of the VulnCheck CLI
+ * @param pat The GitHub Personal Access Token to use for the installation.
+ * @param owner The owner of the repository to install from.
+ * @param repo The repository to install from.
+ * @returns {Promise<void>} Resolves when the installation is complete.
+ */
+async function install({ pat, owner, repo, }) {
+    const octokit = github.getOctokit(pat);
     const { data: release } = await octokit.rest.repos.getLatestRelease({
         owner,
         repo,
     });
-    return release;
-}
-exports.getLatestRelease = getLatestRelease;
-function findAsset(release) {
     const asset = release.assets.find(a => a.name.match(/vc_.*_linux_amd64.tar.gz/));
     if (!asset || !asset.browser_download_url) {
         throw new Error('Unable to find the asset in the release.');
     }
-    return asset;
-}
-exports.findAsset = findAsset;
-async function downloadAsset(asset, pat) {
-    const response = await axios_1.default.get(asset.browser_download_url, {
+    const response = await axios_1.default.get(asset.url, {
         responseType: 'arraybuffer',
         headers: {
             Accept: 'application/octet-stream',
             Authorization: `token ${pat}`,
         },
     });
-    return response.data;
-}
-exports.downloadAsset = downloadAsset;
-async function install({ pat, owner, repo, }, execParam = exec, fsParam = fs) {
-    const octokit = github.getOctokit(pat);
-    const release = await getLatestRelease(octokit, owner, repo);
-    const asset = findAsset(release);
-    const data = await downloadAsset(asset, pat);
-    fsParam.writeFileSync(asset.name, Buffer.from(data));
-    await execParam.exec(`tar zxvf ${asset.name}`);
-    await execParam.exec(`rm ${asset.name}`);
-    await execParam.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
-    await execParam.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
-    await execParam.exec(`vc version`);
+    fs.writeFileSync(asset.name, response.data);
+    await exec.exec(`tar zxvf ${asset.name}`);
+    await exec.exec(`rm ${asset.name}`);
+    await exec.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
+    await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
+    await exec.exec(`vc version`);
 }
 exports.install = install;
 
