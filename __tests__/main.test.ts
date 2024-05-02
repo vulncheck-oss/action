@@ -36,7 +36,7 @@ describe('action', () => {
   it('test placeholder', async () => {
     getInputMock.mockImplementation(name => {
       switch (name) {
-        case 'token':
+        case 'cli_pat':
           return 'foo'
         default:
           return ''
