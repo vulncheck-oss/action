@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as exec from '@actions/exec'
-import axios from 'axios'
 
 /**
  * The main function for the action.
@@ -34,11 +33,11 @@ export async function run(): Promise<void> {
     */
 
     await exec.exec(`
-      curl -L \
-        -H "Accept: application/octet-stream" \ 
-        -H "Authorization: Bearer ${pat}"\
-        -H "X-GitHub-Api-Version: 2022-11-28" \
-        -o ${asset.name} \
+      curl -L 
+        -H "Accept: application/octet-stream"  
+        -H "Authorization: Bearer ${pat}" 
+        -H "X-GitHub-Api-Version: 2022-11-28" 
+        -o ${asset.name} 
         https://api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id}
     `)
 
