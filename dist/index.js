@@ -30474,8 +30474,12 @@ async function run() {
         if (!asset || !asset.browser_download_url) {
             throw new Error('Unable to find the asset in the release.');
         }
-        // Download the asset using wget
-        await exec.exec(`curl -L -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`);
+        const response = await octokit.rest.repos.downloadTarballArchive({
+            owner: 'vulncheck-oss',
+            repo: 'cli',
+            ref: 'main'
+        });
+        console.log(response);
         // Execute ls -la and log the output
         let output = '';
         const options = {
