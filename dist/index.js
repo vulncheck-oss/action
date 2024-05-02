@@ -33986,18 +33986,11 @@ async function run() {
             },
         });
         fs.writeFileSync(asset.name, response.data);
-        // Execute ls -la and log the output
-        let output = '';
-        const options = {
-            listeners: {
-                stdout: (data) => {
-                    output += data.toString();
-                },
-            },
-        };
-        await exec.exec('ls -la', [], options);
-        console.log(output);
-        await exec.exec(`file ${asset.name}`);
+        await exec.exec(`tar zxvf ${asset.name}`);
+        await exec.exec(`rm ${asset.name}`);
+        await exec.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
+        await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
+        await exec.exec(`vc --version`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
