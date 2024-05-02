@@ -33922,7 +33922,7 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 399:
+/***/ 1649:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -33954,43 +33954,91 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.run = void 0;
-const core = __importStar(__nccwpck_require__(2186));
+exports.install = void 0;
 const github = __importStar(__nccwpck_require__(5438));
+const axios_1 = __importDefault(__nccwpck_require__(8757));
 const exec = __importStar(__nccwpck_require__(1514));
 const fs = __importStar(__nccwpck_require__(7147));
-const axios_1 = __importDefault(__nccwpck_require__(8757));
+/**
+ * Install the latest release of the VulnCheck CLI
+ * @param pat The GitHub Personal Access Token to use for the installation.
+ * @param owner The owner of the repository to install from.
+ * @param repo The repository to install from.
+ * @returns {Promise<void>} Resolves when the installation is complete.
+ */
+async function install({ pat, owner, repo, }) {
+    const octokit = github.getOctokit(pat);
+    const { data: release } = await octokit.rest.repos.getLatestRelease({
+        owner,
+        repo,
+    });
+    const asset = release.assets.find(a => a.name.match(/vc_.*_linux_amd64.tar.gz/));
+    if (!asset || !asset.browser_download_url) {
+        throw new Error('Unable to find the asset in the release.');
+    }
+    const response = await axios_1.default.get(asset.url, {
+        responseType: 'arraybuffer',
+        headers: {
+            Accept: 'application/octet-stream',
+            Authorization: `token ${pat}`,
+        },
+    });
+    fs.writeFileSync(asset.name, response.data);
+    await exec.exec(`tar zxvf ${asset.name}`);
+    await exec.exec(`rm ${asset.name}`);
+    await exec.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
+    await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
+    await exec.exec(`vc version`);
+}
+exports.install = install;
+
+
+/***/ }),
+
+/***/ 399:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.run = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const install_1 = __nccwpck_require__(1649);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
     try {
-        // const token = core.getInput('token', { required: true })
         const pat = core.getInput('cli_pat', { required: true });
-        const octokit = github.getOctokit(pat);
-        const { data: release } = await octokit.rest.repos.getLatestRelease({
+        await (0, install_1.install)({
+            pat,
             owner: 'vulncheck-oss',
             repo: 'cli',
         });
-        // walk through release.assets and look for  vc_*_linux_amd64.tar.gz
-        const asset = release.assets.find(a => a.name.match(/vc_.*_linux_amd64.tar.gz/));
-        if (!asset || !asset.browser_download_url) {
-            throw new Error('Unable to find the asset in the release.');
-        }
-        const response = await axios_1.default.get(asset.url, {
-            responseType: 'arraybuffer',
-            headers: {
-                Accept: 'application/octet-stream',
-                Authorization: `token ${pat}`,
-            },
-        });
-        fs.writeFileSync(asset.name, response.data);
-        await exec.exec(`tar zxvf ${asset.name}`);
-        await exec.exec(`rm ${asset.name}`);
-        await exec.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
-        await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
-        await exec.exec(`vc version`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
