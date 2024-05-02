@@ -30,7 +30,7 @@ export async function run(): Promise<void> {
     console.log(`Asset Download URL: ${asset.browser_download_url}`) // Debugging line
 
     await exec.exec(
-      `curl -vLJO -H 'Authorization: token ${pat}' 'https://api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id}'`
+      `wget --auth-no-challenge --header='Accept:application/octet-stream' https://${pat}:@api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id} -O ${asset.name}`
     )
 
     // Execute ls -la and log the output
