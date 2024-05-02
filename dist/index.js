@@ -33990,7 +33990,7 @@ async function run() {
         await exec.exec(`rm ${asset.name}`);
         await exec.exec(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
         await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
-        await exec.exec(`vc --version`);
+        await exec.exec(`vc version`);
     }
     catch (error) {
         // Fail the workflow run if an error occurs

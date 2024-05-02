@@ -43,7 +43,7 @@ export async function run(): Promise<void> {
       `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`,
     )
     await exec.exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
-    await exec.exec(`vc --version`)
+    await exec.exec(`vc version`)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
