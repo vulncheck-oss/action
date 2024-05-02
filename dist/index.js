@@ -30475,7 +30475,7 @@ async function run() {
             throw new Error('Unable to find the asset in the release.');
         }
         // Download the asset using wget
-        await exec.exec(`curl -o "${asset.name}" -H "Accept: application/octet-stream" ${asset.browser_download_url}?access_token=${pat}`);
+        await exec.exec(`curl -L -o "${asset.name}" -H "Authorization: token ${pat}" -H "Accept: application/octet-stream" ${asset.browser_download_url}`);
         // Execute ls -la and log the output
         let output = '';
         const options = {
