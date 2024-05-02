@@ -27,11 +27,20 @@ export async function run(): Promise<void> {
       throw new Error('Unable to find the asset in the release.')
     }
 
-    console.log(`Asset Download URL: ${asset.browser_download_url}`) // Debugging line
-
+    /*
     await exec.exec(
-      `wget --auth-no-challenge --header='Accept:application/octet-stream' https://${pat}:@api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id} -O ${asset.name}`
+      `wget --auth-no-challenge --header 'Authorization: token ${pat}' --header='Accept:application/octet-stream' https://api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id} -O ${asset.name}`
     )
+    */
+
+    await exec.exec(`
+      curl -L \
+        -H "Accept: application/octet-stream" \ 
+        -H "Authorization: Bearer ${pat}"\
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        -o ${asset.name} \
+        https://api.github.com/repos/vulncheck-oss/cli/releases/assets/${asset.id}
+    `)
 
     // Execute ls -la and log the output
     let output = ''
