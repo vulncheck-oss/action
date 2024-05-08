@@ -6,9 +6,6 @@ branding:
   color: gray-dark
 
 inputs:
-  gh_token:
-    description: 'GitHub Token'
-    default: '${{ secrets.GITHUB_TOKEN }}'
   token:
     description: 'VulnCheck Token'
     required: true
