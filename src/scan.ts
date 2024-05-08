@@ -18,6 +18,8 @@ interface ScanResultVulnerability {
 export async function scan(): Promise<void> {
   core.info('Running CLI command: scan')
   await exec('vc scan . -f')
-  const output:ScanResult = JSON.parse(await fs.readFile("output.json", "utf8"))
+  const output: ScanResult = JSON.parse(
+    await fs.readFile('output.json', 'utf8'),
+  )
   console.log(output)
 }

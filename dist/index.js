@@ -34088,12 +34088,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.scan = void 0;
 const exec_1 = __nccwpck_require__(1514);
+const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 async function scan() {
     core.info('Running CLI command: scan');
-    const { stdout } = await (0, exec_1.getExecOutput)('vc scan . --json');
-    const result = JSON.parse(stdout);
-    console.log(result);
+    await (0, exec_1.exec)('vc scan . -f');
+    const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
+    console.log(output);
 }
 exports.scan = scan;
 
@@ -34169,6 +34170,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 3292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 
