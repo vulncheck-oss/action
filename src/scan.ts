@@ -30,7 +30,7 @@ export async function scan(): Promise<void> {
     const token = core.getInput('github-token', { required: true })
     const octokit = github.getOctokit(token)
 
-    let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities`
+    let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities\n\n`
 
     commentBody +=
       '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n'

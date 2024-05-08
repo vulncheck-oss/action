@@ -34099,7 +34099,7 @@ async function scan() {
         output.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
         const octokit = github.getOctokit(token);
-        let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities`;
+        let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities\n\n`;
         commentBody +=
             '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n';
         output.vulnerabilities.map(vuln => (commentBody += `| ${vuln.name} | ${vuln.version} | [${vuln.cve}](https://vulncheck.com/browse/cve/${vuln.cve}) | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`));
