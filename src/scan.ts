@@ -17,7 +17,7 @@ interface ScanResultVulnerability {
 
 export async function scan(): Promise<void> {
   core.info('Running CLI command: scan')
-  await exec('vc scan . -f')
+  await exec('vc scan ./repos/npm-two -f')
   const output: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )

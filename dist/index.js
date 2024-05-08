@@ -34092,7 +34092,7 @@ const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vc scan . -f');
+    await (0, exec_1.exec)('vc scan ./repos/npm-two -f');
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
     core.setOutput('output', JSON.stringify(output));
 }
