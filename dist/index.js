@@ -34090,11 +34090,19 @@ exports.scan = void 0;
 const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
+const github_1 = __nccwpck_require__(5438);
 async function scan() {
     core.info('Running CLI command: scan');
     await (0, exec_1.exec)('vc scan ./repos/npm-two -f');
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
-    core.setOutput('output', JSON.stringify(output));
+    if (github_1.context.payload.pull_request) {
+        core.info('This is a pull request');
+    }
+    else {
+        core.info('This is not a pull request');
+    }
+    core.setOutput('scan-count', output.vulnerabilities.length.toString());
+    core.setOutput('scan-output', JSON.stringify(output));
 }
 exports.scan = scan;
 

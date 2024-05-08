@@ -1,6 +1,7 @@
 import { exec } from '@actions/exec'
 import * as fs from 'fs/promises'
 import * as core from '@actions/core'
+import { context } from '@actions/github'
 
 interface ScanResult {
   vulnerabilities: ScanResultVulnerability[]
@@ -21,5 +22,13 @@ export async function scan(): Promise<void> {
   const output: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
-  core.setOutput('output', JSON.stringify(output))
+
+  if (context.payload.pull_request) {
+    core.info('This is a pull request')
+  } else {
+    core.info('This is not a pull request')
+  }
+
+  core.setOutput('scan-count', output.vulnerabilities.length.toString())
+  core.setOutput('scan-output', JSON.stringify(output))
 }

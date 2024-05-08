@@ -22,8 +22,10 @@ inputs:
     description: 'CVSS Temporal Threshold to fail the workflow'
     required: false
 outputs:
-  output:
-    description: 'Output results based on command'
+  scan-output:
+    description: 'Output results if a scan is run'
+  scan-count:
+    description: 'Output count of vulnerabilities if a scan is run'
 runs:
   using: node20
   main: dist/index.js
