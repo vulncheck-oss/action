@@ -1,4 +1,5 @@
-import { getExecOutput } from '@actions/exec'
+import { exec } from '@actions/exec'
+import * as fs from 'fs/promises'
 import * as core from '@actions/core'
 
 interface ScanResult {
@@ -16,7 +17,7 @@ interface ScanResultVulnerability {
 
 export async function scan(): Promise<void> {
   core.info('Running CLI command: scan')
-  const { stdout } = await getExecOutput('vc scan . --json')
-  const result: ScanResult = JSON.parse(stdout)
-  console.log(result)
+  await exec('vc scan . -f')
+  const output:ScanResult = JSON.parse(await fs.readFile("output.json", "utf8"))
+  console.log(output)
 }
