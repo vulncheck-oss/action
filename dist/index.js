@@ -34103,9 +34103,9 @@ async function scan() {
         commentBody +=
             '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n';
         output.vulnerabilities.map(vuln => (commentBody += `| ${vuln.name} | ${vuln.version} | [${vuln.cve}](https://vulncheck.com/browse/cve/${vuln.cve}) | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`));
-        commentBody += `
-      <br /><br />
-      <sup>Report provided by https://github.com/vulncheck-oss/action</sup>
+        commentBody += `\n\n
+<br /><br />
+<sup>Report provided by https://github.com/vulncheck-oss/action</sup>
     `;
         await octokit.rest.pulls.createReview({
             owner: github.context.repo.owner,

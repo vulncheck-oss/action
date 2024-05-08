@@ -40,9 +40,9 @@ export async function scan(): Promise<void> {
         (commentBody += `| ${vuln.name} | ${vuln.version} | [${vuln.cve}](https://vulncheck.com/browse/cve/${vuln.cve}) | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`),
     )
 
-    commentBody += `
-      <br /><br />
-      <sup>Report provided by https://github.com/vulncheck-oss/action</sup>
+    commentBody += `\n\n
+<br /><br />
+<sup>Report provided by https://github.com/vulncheck-oss/action</sup>
     `
 
     await octokit.rest.pulls.createReview({
