@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { exec } from '@actions/exec'
 import * as fs from 'fs/promises'
 import * as core from '@actions/core'
@@ -23,6 +24,13 @@ export async function scan(): Promise<void> {
     await fs.readFile('output.json', 'utf8'),
   )
 
+  const hash = crypto.createHash('sha256')
+  hash.update(JSON.stringify(output))
+
+  core.setOutput('scan-count', output.vulnerabilities.length.toString())
+  core.setOutput('scan-signature', hash.digest('hex'))
+  core.setOutput('scan-output', JSON.stringify(output))
+
   if (
     github.context.payload.pull_request &&
     output.vulnerabilities.length > 0
@@ -30,9 +38,6 @@ export async function scan(): Promise<void> {
     const token = core.getInput('github-token', { required: true })
     comment(output, token)
   }
-
-  core.setOutput('scan-count', output.vulnerabilities.length.toString())
-  core.setOutput('scan-output', JSON.stringify(output))
 }
 
 async function comment(output: ScanResult, token: string): Promise<void> {

@@ -34085,8 +34085,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.scan = void 0;
+const crypto_1 = __importDefault(__nccwpck_require__(6113));
 const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
@@ -34095,13 +34099,16 @@ async function scan() {
     core.info('Running CLI command: scan');
     await (0, exec_1.exec)('vc scan ./repos/npm-two -f');
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
+    const hash = crypto_1.default.createHash('sha256');
+    hash.update(JSON.stringify(output));
+    core.setOutput('scan-count', output.vulnerabilities.length.toString());
+    core.setOutput('scan-signature', hash.digest('hex'));
+    core.setOutput('scan-output', JSON.stringify(output));
     if (github.context.payload.pull_request &&
         output.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
         comment(output, token);
     }
-    core.setOutput('scan-count', output.vulnerabilities.length.toString());
-    core.setOutput('scan-output', JSON.stringify(output));
 }
 exports.scan = scan;
 async function comment(output, token) {
