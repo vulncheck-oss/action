@@ -2,6 +2,7 @@ import { exec } from '@actions/exec'
 import * as fs from 'fs/promises'
 import * as core from '@actions/core'
 import { context } from '@actions/github'
+import { Octokit } from '@octokit/action'
 
 interface ScanResult {
   vulnerabilities: ScanResultVulnerability[]
@@ -23,10 +24,24 @@ export async function scan(): Promise<void> {
     await fs.readFile('output.json', 'utf8'),
   )
 
-  if (context.payload.pull_request) {
-    core.info('This is a pull request')
-  } else {
-    core.info('This is not a pull request')
+  if (context.payload.pull_request && output.vulnerabilities.length > 0) {
+    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+
+    let commentBody =
+      '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n'
+
+    output.vulnerabilities.map(
+      vuln =>
+        (commentBody += `| ${vuln.name} | ${vuln.version} | ${vuln.cve} | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`),
+    )
+
+    await octokit.rest.pulls.createReview({
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      pull_number: context.payload.pull_request.number,
+      body: commentBody,
+      event: 'COMMENT',
+    })
   }
 
   core.setOutput('scan-count', output.vulnerabilities.length.toString())
