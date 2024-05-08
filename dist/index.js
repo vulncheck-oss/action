@@ -34094,7 +34094,7 @@ async function scan() {
     core.info('Running CLI command: scan');
     await (0, exec_1.exec)('vc scan . -f');
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
-    console.log(output);
+    core.setOutput('output', JSON.stringify(output));
 }
 exports.scan = scan;
 

@@ -21,5 +21,5 @@ export async function scan(): Promise<void> {
   const output: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
-  console.log(output)
+  core.setOutput('output', JSON.stringify(output))
 }
