@@ -59824,7 +59824,7 @@ async function scan() {
     await (0, exec_1.exec)('vc scan ./repos/npm-two -f');
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
     if (github_1.context.payload.pull_request && output.vulnerabilities.length > 0) {
-        const octokit = new action_1.Octokit({ auth: process.env.GITHUB_TOKEN });
+        const octokit = new action_1.Octokit();
         let commentBody = '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n';
         output.vulnerabilities.map(vuln => (commentBody += `| ${vuln.name} | ${vuln.version} | ${vuln.cve} | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`));
         await octokit.rest.pulls.createReview({

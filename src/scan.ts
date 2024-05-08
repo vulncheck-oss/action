@@ -25,7 +25,7 @@ export async function scan(): Promise<void> {
   )
 
   if (context.payload.pull_request && output.vulnerabilities.length > 0) {
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN })
+    const octokit = new Octokit()
 
     let commentBody =
       '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n'
