@@ -53,6 +53,9 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
+      - name: test for a GITHUB_TOKEN
+        run: echo ${{ secrets.GITHUB_TOKEN }}
+
       - name: Test Local Action
         id: test-action
         uses: ./

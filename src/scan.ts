@@ -1,8 +1,7 @@
 import { exec } from '@actions/exec'
 import * as fs from 'fs/promises'
 import * as core from '@actions/core'
-import { context } from '@actions/github'
-import { Octokit } from '@octokit/action'
+import * as github from '@actions/github'
 
 interface ScanResult {
   vulnerabilities: ScanResultVulnerability[]
@@ -24,8 +23,12 @@ export async function scan(): Promise<void> {
     await fs.readFile('output.json', 'utf8'),
   )
 
-  if (context.payload.pull_request && output.vulnerabilities.length > 0) {
-    const octokit = new Octokit()
+  if (
+    github.context.payload.pull_request &&
+    output.vulnerabilities.length > 0
+  ) {
+    const github_token: string = core.getInput('GITHUB_TOKEN')
+    const octokit = github.getOctokit(github_token)
 
     let commentBody =
       '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n'
@@ -36,9 +39,9 @@ export async function scan(): Promise<void> {
     )
 
     await octokit.rest.pulls.createReview({
-      owner: context.repo.owner,
-      repo: context.repo.repo,
-      pull_number: context.payload.pull_request.number,
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      pull_number: github.context.payload.pull_request.number,
       body: commentBody,
       event: 'COMMENT',
     })
