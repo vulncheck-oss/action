@@ -34097,10 +34097,7 @@ async function scan() {
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
     if (github.context.payload.pull_request &&
         output.vulnerabilities.length > 0) {
-        const token = core.getInput('github_token', { required: false }) ||
-            process.env.GITHUB_TOKEN;
-        console.log('tokenk', token);
-        const octokit = github.getOctokit(token);
+        const octokit = github.getOctokit(core.getInput('github_token'));
         let commentBody = '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n';
         output.vulnerabilities.map(vuln => (commentBody += `| ${vuln.name} | ${vuln.version} | ${vuln.cve} | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`));
         await octokit.rest.pulls.createReview({
