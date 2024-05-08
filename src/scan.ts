@@ -27,6 +27,7 @@ export async function scan(): Promise<void> {
     github.context.payload.pull_request &&
     output.vulnerabilities.length > 0
   ) {
+    console.log('token', process.env.GITHUB_TOKEN)
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN as string)
 
     let commentBody =
