@@ -60,6 +60,6 @@ jobs:
           token: ${{ secrets.VC_TOKEN }}
           cli_pat: ${{ secrets.CLI_PAT }}
 
-      - name: Print Output
+      - name: Retrieve Output
         id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: echo "${{ steps.test-action.outputs.output }}"
