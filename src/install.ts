@@ -27,7 +27,7 @@ export async function install({
   })
 
   const asset = release.assets.find(a =>
-    a.name.match(/vci_.*_linux_amd64.tar.gz/),
+    a.name.match(/vci_*_linux_amd64.tar.gz/),
   )
 
   if (!asset || !asset.browser_download_url) {
