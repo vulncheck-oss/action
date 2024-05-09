@@ -3,8 +3,8 @@
 </p>
 
 # The VulnCheck Action
-Bring the VulnCheck into your CI/CD pipeline.
 
+Bring the VulnCheck into your CI/CD pipeline.
 
 ![CI](https://github.com/vulncheck-oss/action/actions/workflows/ci.yml/badge.svg)
 [![Check dist/](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml)
@@ -38,6 +38,7 @@ Bring the VulnCheck into your CI/CD pipeline.
    ```
 
 ## Publishing a New Release
+
 This project includes a helper script, [`script/release`](./script/release)
 designed to streamline the process of tagging and pushing new releases for
 GitHub Actions.

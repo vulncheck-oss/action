@@ -33972,7 +33972,7 @@ async function install({ pat, owner, repo, }) {
         owner,
         repo,
     });
-    const asset = release.assets.find(a => a.name.match(/vc_.*_linux_amd64.tar.gz/));
+    const asset = release.assets.find(a => a.name.match(/vci_.*_linux_amd64.tar.gz/));
     if (!asset || !asset.browser_download_url) {
         throw new Error('Unable to find the asset in the release.');
     }
@@ -33986,9 +33986,9 @@ async function install({ pat, owner, repo, }) {
     fs.writeFileSync(asset.name, response.data);
     await (0, exec_1.exec)(`tar zxvf ${asset.name}`);
     await (0, exec_1.exec)(`rm ${asset.name}`);
-    await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`);
+    await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`);
     await (0, exec_1.exec)(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
-    await (0, exec_1.exec)(`vc version`);
+    await (0, exec_1.exec)(`vci version`);
 }
 exports.install = install;
 
@@ -34097,7 +34097,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vc scan ./repos/npm-two -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(output));
