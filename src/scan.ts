@@ -52,7 +52,7 @@ async function checkComments(signature: string, token: string): Promise<void> {
     repo: github.context.repo.repo,
     issue_number: github.context.payload.pull_request.number,
   })
-  console.log(result)
+  console.log(result.data)
 }
 
 async function comment(output: ScanResult, token: string): Promise<void> {

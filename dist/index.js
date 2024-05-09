@@ -34123,7 +34123,7 @@ async function checkComments(signature, token) {
         repo: github.context.repo.repo,
         issue_number: github.context.payload.pull_request.number,
     });
-    console.log(result);
+    console.log(result.data);
 }
 async function comment(output, token) {
     const octokit = github.getOctokit(token);
