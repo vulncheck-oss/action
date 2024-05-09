@@ -37,7 +37,7 @@ export async function scan(): Promise<void> {
     output.vulnerabilities.length > 0
   ) {
     const token = core.getInput('github-token', { required: true })
-    console.log(await getLastComment(token))
+    console.log('getLastComment', await getLastComment(token))
     comment(token, output, signature)
   }
 }
@@ -55,7 +55,7 @@ async function getLastComment(token: string): Promise<string | undefined> {
   })
 
   const regex = /<!-- vulncheck-scan-report: ([a-f0-9]+) -->/
-  let match = result.data.find(item => regex.test(item.body as string))
+  const match = result.data.find(item => regex.test(item.body as string))
   return match ? match.body : undefined
 }
 

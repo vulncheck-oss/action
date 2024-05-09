@@ -34108,12 +34108,12 @@ async function scan() {
     if (github.context.payload.pull_request &&
         output.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
-        checkComments(signature, token);
+        console.log('getLastComment', await getLastComment(token));
         comment(token, output, signature);
     }
 }
 exports.scan = scan;
-async function checkComments(signature, token) {
+async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
         return;
     }
@@ -34124,7 +34124,9 @@ async function checkComments(signature, token) {
         user: github.context.actor,
         issue_number: github.context.payload.pull_request.number,
     });
-    console.log(result.data);
+    const regex = /<!-- vulncheck-scan-report: ([a-f0-9]+) -->/;
+    const match = result.data.find(item => regex.test(item.body));
+    return match ? match.body : undefined;
 }
 async function comment(token, output, signature) {
     const octokit = github.getOctokit(token);
