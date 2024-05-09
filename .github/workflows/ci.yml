@@ -63,4 +63,5 @@ jobs:
         id: output
         run: |
           echo "${{ steps.test-action.outputs.scan-count }}"
+          echo "${{ steps.test-action.outputs.scan-signature }}"
           echo "${{ steps.test-action.outputs.scan-output }}"

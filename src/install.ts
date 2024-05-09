@@ -27,7 +27,7 @@ export async function install({
   })
 
   const asset = release.assets.find(a =>
-    a.name.match(/vc_.*_linux_amd64.tar.gz/),
+    a.name.match(/vci_.*_linux_amd64.tar.gz/),
   )
 
   if (!asset || !asset.browser_download_url) {
@@ -46,8 +46,8 @@ export async function install({
   await exec(`tar zxvf ${asset.name}`)
   await exec(`rm ${asset.name}`)
   await exec(
-    `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vc /usr/local/bin/vc`,
+    `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`,
   )
   await exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
-  await exec(`vc version`)
+  await exec(`vci version`)
 }

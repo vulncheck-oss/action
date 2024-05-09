@@ -30,6 +30,8 @@ outputs:
     description: 'Output results if a scan is run'
   scan-count:
     description: 'Output count of vulnerabilities if a scan is run'
+  scan-signature:
+    description: 'SHA256 hash of the scan results (used to detect change)'
 runs:
   using: node20
   main: dist/index.js
