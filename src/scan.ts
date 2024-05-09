@@ -26,9 +26,10 @@ export async function scan(): Promise<void> {
 
   const hash = crypto.createHash('sha256')
   hash.update(JSON.stringify(output))
+  const signature = hash.digest('hex')
 
   core.setOutput('scan-count', output.vulnerabilities.length.toString())
-  core.setOutput('scan-signature', hash.digest('hex'))
+  core.setOutput('scan-signature', signature)
   core.setOutput('scan-output', JSON.stringify(output))
 
   if (
@@ -36,8 +37,15 @@ export async function scan(): Promise<void> {
     output.vulnerabilities.length > 0
   ) {
     const token = core.getInput('github-token', { required: true })
+    checkComments(signature, token)
     comment(output, token)
   }
+}
+
+async function checkComments(signature: string, token: string): Promise<void> {
+  const octokit = github.getOctokit(token)
+  const result = await octokit.rest.pulls.listCommentsForReview()
+  console.log(result)
 }
 
 async function comment(output: ScanResult, token: string): Promise<void> {

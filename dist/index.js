@@ -34101,16 +34101,23 @@ async function scan() {
     const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(output));
+    const signature = hash.digest('hex');
     core.setOutput('scan-count', output.vulnerabilities.length.toString());
-    core.setOutput('scan-signature', hash.digest('hex'));
+    core.setOutput('scan-signature', signature);
     core.setOutput('scan-output', JSON.stringify(output));
     if (github.context.payload.pull_request &&
         output.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
+        checkComments(signature, token);
         comment(output, token);
     }
 }
 exports.scan = scan;
+async function checkComments(signature, token) {
+    const octokit = github.getOctokit(token);
+    const result = await octokit.rest.pulls.listCommentsForReview();
+    console.log(result);
+}
 async function comment(output, token) {
     const octokit = github.getOctokit(token);
     let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities\n\n`;
