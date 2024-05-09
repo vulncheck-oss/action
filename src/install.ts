@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import * as github from '@actions/github'
 import axios from 'axios'
 import { exec } from '@actions/exec'
@@ -26,11 +27,13 @@ export async function install({
     repo,
   })
 
-  console.log(release.assets)
-
   const asset = release.assets.find(a =>
     a.name.match(/vci_*_linux_amd64.tar.gz/),
   )
+
+  core.info(release.assets[0].name)
+
+  console.log(release.assets)
 
   if (!asset || !asset.browser_download_url) {
     throw new Error('Unable to find the asset in the release.')
