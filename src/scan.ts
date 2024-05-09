@@ -43,8 +43,15 @@ export async function scan(): Promise<void> {
 }
 
 async function checkComments(signature: string, token: string): Promise<void> {
+  if (!github.context.payload.pull_request) {
+    return
+  }
   const octokit = github.getOctokit(token)
-  const result = await octokit.rest.pulls.listCommentsForReview()
+  const result = await octokit.rest.pulls.listReviewComments({
+    owner: github.context.repo.owner,
+    repo: github.context.repo.repo,
+    pull_number: github.context.payload.pull_request.number,
+  })
   console.log(result)
 }
 
