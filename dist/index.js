@@ -34108,14 +34108,25 @@ async function scan() {
     if (github.context.payload.pull_request &&
         output.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
-        console.log('getLastComment', await getLastComment(token));
-        comment(token, output, signature);
+        const lastComment = await getLastComment(token);
+        if (!lastComment) {
+            core.info('No scan result found yet, commenting');
+            comment(token, output, signature);
+        }
+        if (lastComment && lastComment.signature !== signature) {
+            core.info('Different scan result found, commenting the change');
+            // commentChange(token, output, lastComment)
+        }
+        if (lastComment && lastComment.signature === signature) {
+            core.info('Same scan result found, skipping comment');
+        }
     }
+    return output;
 }
 exports.scan = scan;
 async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
-        return undefined; // Guard clause for no pull_request in context
+        return undefined;
     }
     const octokit = github.getOctokit(token);
     const { data: comments } = await octokit.rest.issues.listComments({
