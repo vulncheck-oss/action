@@ -34042,8 +34042,15 @@ async function run() {
             owner: 'vulncheck-oss',
             repo: 'cli',
         });
-        if (command === 'scan') {
-            await (0, scan_1.scan)();
+        switch (command) {
+            case 'scan': {
+                const result = await (0, scan_1.scan)();
+                if (result.failed)
+                    core.setFailed(result.failed);
+                break;
+            }
+            default:
+                core.setFailed(`Unknown command: ${command}`);
         }
     }
     catch (error) {
@@ -34098,20 +34105,20 @@ const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
     await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
-    const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
+    const results = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
-    hash.update(JSON.stringify(output));
+    hash.update(JSON.stringify(results));
     const signature = hash.digest('hex');
-    core.setOutput('scan-count', output.vulnerabilities.length.toString());
+    core.setOutput('scan-count', results.vulnerabilities.length.toString());
     core.setOutput('scan-signature', signature);
-    core.setOutput('scan-output', JSON.stringify(output));
+    core.setOutput('scan-output', JSON.stringify(results));
     if (github.context.payload.pull_request &&
-        output.vulnerabilities.length > 0) {
+        results.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
         const lastComment = await getLastComment(token);
         if (!lastComment) {
             core.info('No scan result found yet, commenting');
-            comment(token, output, signature);
+            comment(token, results, signature);
         }
         if (lastComment && lastComment.signature !== signature) {
             core.info('Different scan result found, commenting the change');
@@ -34121,7 +34128,10 @@ async function scan() {
             core.info('Same scan result found, skipping comment');
         }
     }
-    return output;
+    if (results.vulnerabilities.length > 0) {
+        results.failed = `VulnCheck has detected ${results.vulnerabilities.length} vulnerabilities`;
+    }
+    return results;
 }
 exports.scan = scan;
 async function getLastComment(token) {

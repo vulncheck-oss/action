@@ -18,8 +18,14 @@ export async function run(): Promise<void> {
       repo: 'cli',
     })
 
-    if (command === 'scan') {
-      await scan()
+    switch (command) {
+      case 'scan': {
+        const result = await scan()
+        if (result.failed) core.setFailed(result.failed)
+        break
+      }
+      default:
+        core.setFailed(`Unknown command: ${command}`)
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
