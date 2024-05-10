@@ -1,4 +1,4 @@
-import type { ScanResult, Comment } from 'types/types'
+import type { ScanResult, Comment, ScanResultVulnDiff } from 'types/types'
 
 import crypto from 'crypto'
 import { exec } from '@actions/exec'
@@ -9,53 +9,58 @@ import * as github from '@actions/github'
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
   await exec('vci scan ./repos/npm-two -f')
-  const results: ScanResult = JSON.parse(
+  const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
 
   const hash = crypto.createHash('sha256')
-  hash.update(JSON.stringify(results))
+  hash.update(JSON.stringify(result))
   const signature = hash.digest('hex')
 
-  core.setOutput('scan-count', results.vulnerabilities.length.toString())
+  core.setOutput('scan-count', result.vulnerabilities.length.toString())
   core.setOutput('scan-signature', signature)
-  core.setOutput('scan-output', JSON.stringify(results))
+  core.setOutput('scan-output', JSON.stringify(result))
 
   if (
     github.context.payload.pull_request &&
-    results.vulnerabilities.length > 0
+    result.vulnerabilities.length > 0
   ) {
     const token = core.getInput('github-token', { required: true })
     const lastComment = await getLastComment(token)
 
     if (!lastComment) {
       core.info('No scan result found yet, commenting')
-      comment(token, results, signature)
+      comment(token, result, signature)
     }
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
-      commentChange(token, results, lastComment.result)
+      console.log('scanDiff', scanDiff(result, lastComment.result))
+      // commentChange(token, results, lastComment.result)
     }
     if (lastComment && lastComment.signature === signature) {
       core.info('Same scan result found, skipping comment')
     }
   }
 
-  if (results.vulnerabilities.length > 0) {
-    results.failed = `VulnCheck has detected ${results.vulnerabilities.length} vulnerabilities`
+  if (result.vulnerabilities.length > 0) {
+    result.failed = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`
   }
 
-  return results
+  return result
 }
 
-async function commentChange(
-  token: string,
-  currentResult: ScanResult,
-  previousResult: ScanResult,
-): Promise<void> {
-  // const octokit = github.getOctokit(token)
-  console.log('current', currentResult)
-  console.log('previous', previousResult)
+function scanDiff(cur: ScanResult, prev: ScanResult): ScanResultVulnDiff[] {
+  const diff: ScanResultVulnDiff[] = []
+  cur.vulnerabilities.map(vuln => {
+    if (!prev.vulnerabilities.find(pv => pv.cve === vuln.cve))
+      diff.push({ cve: vuln.cve, added: true })
+  })
+  prev.vulnerabilities.map(vuln => {
+    if (!cur.vulnerabilities.find(cv => cv.cve === vuln.cve))
+      diff.push({ cve: vuln.cve, removed: true })
+  })
+
+  return diff
 }
 
 async function getLastComment(token: string): Promise<Comment | undefined> {
