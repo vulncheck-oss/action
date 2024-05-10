@@ -34122,7 +34122,7 @@ async function scan() {
         }
         if (lastComment && lastComment.signature !== signature) {
             core.info('Different scan result found, commenting the change');
-            // commentChange(token, output, lastComment)
+            commentChange(token, results, lastComment.result);
         }
         if (lastComment && lastComment.signature === signature) {
             core.info('Same scan result found, skipping comment');
@@ -34134,6 +34134,11 @@ async function scan() {
     return results;
 }
 exports.scan = scan;
+async function commentChange(token, currentResult, previousResult) {
+    // const octokit = github.getOctokit(token)
+    console.log('current', currentResult);
+    console.log('previous', previousResult);
+}
 async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
         return undefined;

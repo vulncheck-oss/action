@@ -34,7 +34,7 @@ export async function scan(): Promise<ScanResult> {
     }
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
-      // commentChange(token, output, lastComment)
+      commentChange(token, results, lastComment.result)
     }
     if (lastComment && lastComment.signature === signature) {
       core.info('Same scan result found, skipping comment')
@@ -46,6 +46,16 @@ export async function scan(): Promise<ScanResult> {
   }
 
   return results
+}
+
+async function commentChange(
+  token: string,
+  currentResult: ScanResult,
+  previousResult: ScanResult,
+): Promise<void> {
+  // const octokit = github.getOctokit(token)
+  console.log('current', currentResult)
+  console.log('previous', previousResult)
 }
 
 async function getLastComment(token: string): Promise<Comment | undefined> {
