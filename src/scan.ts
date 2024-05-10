@@ -17,6 +17,11 @@ interface ScanResultVulnerability {
   fixed_versions: string
 }
 
+interface Comment {
+  signature: string
+  result: ScanResult
+}
+
 export async function scan(): Promise<void> {
   core.info('Running CLI command: scan')
   await exec('vci scan ./repos/npm-two -f')
@@ -42,22 +47,31 @@ export async function scan(): Promise<void> {
   }
 }
 
-async function getLastComment(token: string): Promise<string | undefined> {
+async function getLastComment(token: string): Promise<Comment | undefined> {
   if (!github.context.payload.pull_request) {
-    return
+    return undefined // Guard clause for no pull_request in context
   }
+
   const octokit = github.getOctokit(token)
-  const result = await octokit.rest.issues.listComments({
+  const { data: comments } = await octokit.rest.issues.listComments({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
-    user: github.context.actor,
     issue_number: github.context.payload.pull_request.number,
   })
 
-  const regex = /<!-- vulncheck-scan-signature: ([a-f0-9]{64}) -->/
-  const found = result.data.find(item => regex.test(item.body as string))
-  const match = found?.body?.match(regex)
-  return match ? match[1] : undefined
+  const regex =
+    /<!-- vulncheck-scan-signature: ([a-f0-9]{64}) -->([\s\S]*?)<!-- vulncheck-scan-report: ({.*?}) -->/
+
+  for (const comment of comments) {
+    const match = regex.exec(comment.body ?? '')
+    if (match) {
+      return {
+        signature: match[1],
+        result: JSON.parse(match[3]),
+      }
+    }
+  }
+  return undefined
 }
 
 async function comment(
