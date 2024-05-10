@@ -62,8 +62,8 @@ async function getLastComment(token: string): Promise<Comment | undefined> {
   const regex =
     /<!-- vulncheck-scan-signature: ([a-f0-9]{64}) -->([\s\S]*?)<!-- vulncheck-scan-report: ({.*?}) -->/
 
-  for (const comment of comments) {
-    const match = regex.exec(comment.body ?? '')
+  for (const cmt of comments) {
+    const match = regex.exec(cmt.body ?? '')
     if (match) {
       return {
         signature: match[1],
