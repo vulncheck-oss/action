@@ -54,9 +54,10 @@ async function getLastComment(token: string): Promise<string | undefined> {
     issue_number: github.context.payload.pull_request.number,
   })
 
-  const regex = /<!-- vulncheck-scan-report: ([a-f0-9]+) -->/
-  const match = result.data.find(item => regex.test(item.body as string))
-  return match ? match.body : undefined
+  const regex = /<!-- vulncheck-scan-report: ([a-f0-9]{64}) -->/
+  const item = result.data.find(item => regex.test(item.body as string))
+  const match = item?.body?.match(regex)
+  return match ? match[1] : undefined
 }
 
 async function comment(
