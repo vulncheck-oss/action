@@ -34124,9 +34124,10 @@ async function getLastComment(token) {
         user: github.context.actor,
         issue_number: github.context.payload.pull_request.number,
     });
-    const regex = /<!-- vulncheck-scan-report: ([a-f0-9]+) -->/;
-    const match = result.data.find(item => regex.test(item.body));
-    return match ? match.body : undefined;
+    const regex = /<!-- vulncheck-scan-report: ([a-f0-9]{64}) -->/;
+    const found = result.data.find(item => regex.test(item.body));
+    const match = found?.body?.match(regex);
+    return match ? match[1] : undefined;
 }
 async function comment(token, output, signature) {
     const octokit = github.getOctokit(token);
