@@ -34220,7 +34220,7 @@ function table(headers, rows) {
         output += '<tr>\n';
         row.cells.map(cell => (output += cell.link
             ? `<td><a href="${cell.link}">${cell.value}</a></td>`
-            : `<td>${cell}</td>\n`));
+            : `<td>${cell.value}</td>\n`));
         output += '</tr>\n';
     });
     return output;

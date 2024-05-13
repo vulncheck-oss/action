@@ -153,7 +153,7 @@ function table(headers: string[], rows: TableRow[]): string {
       cell =>
         (output += cell.link
           ? `<td><a href="${cell.link}">${cell.value}</a></td>`
-          : `<td>${cell}</td>\n`),
+          : `<td>${cell.value}</td>\n`),
     )
     output += '</tr>\n'
   })
