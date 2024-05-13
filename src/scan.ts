@@ -119,7 +119,7 @@ async function comment(
       { value: vuln.fixed_versions },
     ],
   }))
-  body = table(headers, rows)
+  body += table(headers, rows)
 
   body += `\n\n
 <br />
