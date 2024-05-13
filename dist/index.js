@@ -34173,7 +34173,7 @@ async function getLastComment(token) {
 }
 async function comment(token, output, signature) {
     const octokit = github.getOctokit(token);
-    let body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities\n\n`;
+    let body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}\n\n`;
     const headers = [
         'Name',
         'Version',
