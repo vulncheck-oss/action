@@ -8,7 +8,7 @@ import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-two -f')
+  await exec('vci scan ./repos/npm-one -f')
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
@@ -34,7 +34,8 @@ export async function scan(): Promise<ScanResult> {
     }
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
-      console.log('scanDiff', scanDiff(result, lastComment.result))
+      // console.log('scanDiff', scanDiff(result, lastComment.result))
+      comment(token, result, signature, scanDiff(result, lastComment.result))
     }
     if (lastComment && lastComment.signature === signature) {
       core.info('Same scan result found, skipping comment')

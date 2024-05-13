@@ -34104,7 +34104,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-one -f');
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34122,7 +34122,8 @@ async function scan() {
         }
         if (lastComment && lastComment.signature !== signature) {
             core.info('Different scan result found, commenting the change');
-            console.log('scanDiff', scanDiff(result, lastComment.result));
+            // console.log('scanDiff', scanDiff(result, lastComment.result))
+            comment(token, result, signature, scanDiff(result, lastComment.result));
         }
         if (lastComment && lastComment.signature === signature) {
             core.info('Same scan result found, skipping comment');
