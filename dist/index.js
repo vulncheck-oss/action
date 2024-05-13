@@ -34104,7 +34104,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-one -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34123,9 +34123,6 @@ async function scan() {
         if (lastComment && lastComment.signature !== signature) {
             core.info('Different scan result found, commenting the change');
             console.log('scanDiff', scanDiff(result, lastComment.result));
-            // commentChange(token, results, lastComment.result)
-            // NEW: https://img.shields.io/badge/new-FF0000
-            // https://img.shields.io/badge/removed-6ee7b7
         }
         if (lastComment && lastComment.signature === signature) {
             core.info('Same scan result found, skipping comment');
@@ -34171,27 +34168,30 @@ async function getLastComment(token) {
     }
     return undefined;
 }
-async function comment(token, output, signature) {
+async function comment(token, output, signature, diff) {
+    const added = 'https://img.shields.io/badge/new-FF0000';
+    const removed = 'https://img.shields.io/badge/removed-6ee7b7';
     const octokit = github.getOctokit(token);
-    let body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}\n\n`;
-    const headers = [
-        'Name',
-        'Version',
-        'CVE',
-        'CVSS Base Score',
-        'CVSS Temporal Score',
-        'Fixed Versions',
-    ];
-    const rows = output.vulnerabilities.map(vuln => ({
-        cells: [
-            { value: vuln.name },
-            { value: vuln.version },
-            { value: vuln.cve, link: `https://vulncheck.com/browse/cve/${vuln.cve}` },
-            { value: vuln.cvss_base_score },
-            { value: vuln.cvss_temporal_score },
-            { value: vuln.fixed_versions },
-        ],
-    }));
+    let body;
+    const headers = [];
+    if (diff) {
+        body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${diff.length} ${diff.length === 1 ? 'change' : 'changes'}**\n\n`;
+        headers.push('Diff');
+    }
+    else {
+        body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}\n\n`;
+    }
+    headers.push('Name', 'Version', 'CVE', 'CVSS Base Score', 'CVSS Temporal Score', 'Fixed Versions');
+    const rows = output.vulnerabilities.map(vuln => {
+        const cells = [];
+        const difference = diff?.find(d => d.cve === vuln.cve);
+        if (difference)
+            cells.push({
+                value: `<img src="${difference.added ? added : removed}" alt="${difference.added ? 'added' : 'removed'}" />`,
+            });
+        cells.push({ value: vuln.name }, { value: vuln.version }, { value: vuln.cve, link: `https://vulncheck.com/browse/cve/${vuln.cve}` }, { value: vuln.cvss_base_score }, { value: vuln.cvss_temporal_score }, { value: vuln.fixed_versions });
+        return { cells };
+    });
     body += table(headers, rows);
     body += `\n\n
 <br />
