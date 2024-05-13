@@ -23,3 +23,12 @@ export interface Comment {
   signature: string
   result: ScanResult
 }
+
+export interface TableCell {
+  value: string
+  link?: string
+}
+
+export interface TableRow {
+  cells: TableCell[]
+}
