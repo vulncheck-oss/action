@@ -126,6 +126,7 @@ async function comment(
       cells.push({
         value: `<img src="${difference.added ? added : removed}" alt="${difference.added ? 'added' : 'removed'}" />`,
       })
+    else if (diff) cells.push({ value: '' })
     cells.push(
       { value: vuln.name },
       { value: vuln.version },

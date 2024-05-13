@@ -34190,6 +34190,8 @@ async function comment(token, output, signature, diff) {
             cells.push({
                 value: `<img src="${difference.added ? added : removed}" alt="${difference.added ? 'added' : 'removed'}" />`,
             });
+        else if (diff)
+            cells.push({ value: '' });
         cells.push({ value: vuln.name }, { value: vuln.version }, { value: vuln.cve, link: `https://vulncheck.com/browse/cve/${vuln.cve}` }, { value: vuln.cvss_base_score }, { value: vuln.cvss_temporal_score }, { value: vuln.fixed_versions });
         return { cells };
     });
