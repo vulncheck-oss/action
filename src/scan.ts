@@ -160,7 +160,7 @@ function table(headers: string[], rows: TableRow[]): string {
   let output = '<table>\n'
   output += '<tr>\n'
   headers.map(header => {
-    output += `<th><sup>${header}</sup></th>\n`
+    output += `<th><sub>${header}</sub></th>\n`
   })
   output += '</tr>\n'
 
@@ -169,8 +169,8 @@ function table(headers: string[], rows: TableRow[]): string {
     row.cells.map(
       cell =>
         (output += cell.link
-          ? `<td><sup><a href="${cell.link}">${cell.value}</a></sup></td>`
-          : `<td><sup>${cell.value}</sup></td>\n`),
+          ? `<td><sub><a href="${cell.link}">${cell.value}</a></sub></td>`
+          : `<td><sub>${cell.value}</sub></td>\n`),
     )
     output += '</tr>\n'
   })
