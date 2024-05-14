@@ -125,8 +125,8 @@ async function comment(
     'Name',
     'Version',
     'CVE',
-    'CVSS Base Score',
-    'CVSS Temporal Score',
+    'CVSS Base',
+    'CVSS Temporal',
     'Fixed Versions',
   ]
 
@@ -202,7 +202,7 @@ function table(headers: string[], tableRows: TableRow[]): string {
     row.cells.map(
       cell =>
         (output += cell.link
-          ? `<td><<a href="${cell.link}">${cell.value}</a></</td>`
+          ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
           : `<td>${cell.value}</td>\n`),
     )
     output += '</tr>\n'

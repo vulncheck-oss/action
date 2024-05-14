@@ -34182,8 +34182,8 @@ async function comment(token, output, signature, diff, previous) {
         'Name',
         'Version',
         'CVE',
-        'CVSS Base Score',
-        'CVSS Temporal Score',
+        'CVSS Base',
+        'CVSS Temporal',
         'Fixed Versions',
     ];
     if (diff && previous)
@@ -34246,7 +34246,7 @@ function table(headers, tableRows) {
     tableRows.map(row => {
         output += '<tr>\n';
         row.cells.map(cell => (output += cell.link
-            ? `<td><<a href="${cell.link}">${cell.value}</a></</td>`
+            ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
             : `<td>${cell.value}</td>\n`));
         output += '</tr>\n';
     });
