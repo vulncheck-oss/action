@@ -135,7 +135,7 @@ async function comment(
       headers,
       rows([...output.vulnerabilities, ...previous.vulnerabilities], diff),
     )
-  else body + table(headers, rows(output.vulnerabilities))
+  else body += table(headers, rows(output.vulnerabilities))
 
   body += `\n\n
 <br />
