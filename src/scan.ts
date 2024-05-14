@@ -1,4 +1,10 @@
-import type { ScanResult, Comment, ScanResultVulnDiff, TableRow } from './types'
+import type {
+  ScanResult,
+  Comment,
+  ScanResultVulnDiff,
+  TableRow,
+  ScanResultVuln,
+} from './types'
 
 import crypto from 'crypto'
 import { exec } from '@actions/exec'
@@ -34,8 +40,14 @@ export async function scan(): Promise<ScanResult> {
     }
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
-      // console.log('scanDiff', scanDiff(result, lastComment.result))
-      comment(token, result, signature, scanDiff(result, lastComment.result))
+
+      comment(
+        token,
+        result,
+        signature,
+        scanDiff(result, lastComment.result),
+        lastComment.result,
+      )
     }
     if (lastComment && lastComment.signature === signature) {
       core.info('Same scan result found, skipping comment')
@@ -97,9 +109,8 @@ async function comment(
   output: ScanResult,
   signature: string,
   diff?: ScanResultVulnDiff[],
+  previous?: ScanResult,
 ): Promise<void> {
-  const added = '<img src="https://img.shields.io/badge/new-FF0000" />'
-  const removed = '<img src="https://img.shields.io/badge/removed-6ee7b7" />'
   const octokit = github.getOctokit(token)
 
   let body
@@ -118,27 +129,13 @@ async function comment(
     'CVSS Temporal Score',
     'Fixed Versions',
   ]
-  const rows: TableRow[] = output.vulnerabilities.map(vuln => {
-    const difference = diff?.find(d => d.cve === vuln.cve)
-    return {
-      cells: [
-        {
-          value: difference
-            ? `${difference.added ? added : removed} ${vuln.name}`
-            : vuln.name,
-        },
-        { value: vuln.version },
-        {
-          value: vuln.cve,
-          link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
-        },
-        { value: vuln.cvss_base_score },
-        { value: vuln.cvss_temporal_score },
-        { value: vuln.fixed_versions },
-      ],
-    }
-  })
-  body += table(headers, rows)
+
+  if (diff && previous)
+    body += table(
+      headers,
+      rows([...output.vulnerabilities, ...previous.vulnerabilities], diff),
+    )
+  else body + table(headers, rows(output.vulnerabilities))
 
   body += `\n\n
 <br />
@@ -158,7 +155,35 @@ async function comment(
   }
 }
 
-function table(headers: string[], rows: TableRow[]): string {
+function rows(
+  vulns: ScanResultVuln[],
+  diff?: ScanResultVulnDiff[],
+): TableRow[] {
+  const added = '<img src="https://img.shields.io/badge/new-6667ab" />'
+  const removed = '<img src="https://img.shields.io/badge/removed-6ee7b7" />'
+  return vulns.map(vuln => {
+    const difference = diff?.find(d => d.cve === vuln.cve)
+    return {
+      cells: [
+        {
+          value: difference
+            ? `${difference.added ? added : removed} ${vuln.name}`
+            : vuln.name,
+        },
+        { value: vuln.version },
+        {
+          value: vuln.cve,
+          link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+        },
+        { value: vuln.cvss_base_score },
+        { value: vuln.cvss_temporal_score },
+        { value: vuln.fixed_versions },
+      ],
+    }
+  })
+}
+
+function table(headers: string[], tableRows: TableRow[]): string {
   let output = '<table>\n'
   output += '<tr>\n'
   headers.map(header => {
@@ -166,7 +191,7 @@ function table(headers: string[], rows: TableRow[]): string {
   })
   output += '</tr>\n'
 
-  rows.map(row => {
+  tableRows.map(row => {
     output += '<tr>\n'
     row.cells.map(
       cell =>
