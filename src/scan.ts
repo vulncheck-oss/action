@@ -8,7 +8,7 @@ import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-two -f')
+  await exec('vci scan ./repos/npm-one -f')
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
