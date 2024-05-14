@@ -34209,39 +34209,45 @@ async function comment(token, output, signature, diff, previous) {
 function rows(vulns, diff) {
     const added = '<img src="https://img.shields.io/badge/new-6667ab" />';
     const removed = '<img src="https://img.shields.io/badge/removed-6ee7b7" />';
-    return vulns.map(vuln => {
+    const cves = [];
+    const output = [];
+    for (const vuln of vulns) {
         const difference = diff?.find(d => d.cve === vuln.cve);
-        return {
-            cells: [
-                {
-                    value: difference
-                        ? `${difference.added ? added : removed} ${vuln.name}`
-                        : vuln.name,
-                },
-                { value: vuln.version },
-                {
-                    value: vuln.cve,
-                    link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
-                },
-                { value: vuln.cvss_base_score },
-                { value: vuln.cvss_temporal_score },
-                { value: vuln.fixed_versions },
-            ],
-        };
-    });
+        if (!cves.includes(vuln.cve)) {
+            output.push({
+                cells: [
+                    {
+                        value: difference
+                            ? `${difference.added ? added : removed} ${vuln.name}`
+                            : vuln.name,
+                    },
+                    { value: vuln.version },
+                    {
+                        value: vuln.cve,
+                        link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+                    },
+                    { value: vuln.cvss_base_score },
+                    { value: vuln.cvss_temporal_score },
+                    { value: vuln.fixed_versions },
+                ],
+            });
+        }
+        cves.push(vuln.cve);
+    }
+    return output;
 }
 function table(headers, tableRows) {
     let output = '<table>\n';
     output += '<tr>\n';
     headers.map(header => {
-        output += `<th><sub>${header}</sub></th>\n`;
+        output += `<th>${header}</th>\n`;
     });
     output += '</tr>\n';
     tableRows.map(row => {
         output += '<tr>\n';
         row.cells.map(cell => (output += cell.link
-            ? `<td><sub><a href="${cell.link}">${cell.value}</a></sub></td>`
-            : `<td><sub>${cell.value}</sub></td>\n`));
+            ? `<td><<a href="${cell.link}">${cell.value}</a></</td>`
+            : `<td>${cell.value}</td>\n`));
         output += '</tr>\n';
     });
     output += '</table>\n';
