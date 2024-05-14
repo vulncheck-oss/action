@@ -115,10 +115,20 @@ async function comment(
 
   let body
 
+  const copyTotal = `**${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}`
+  const logo = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" />`
+
   if (diff) {
-    body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${diff.length} ${diff.length === 1 ? 'change' : 'changes'}**\n\n`
+    const added = diff.filter(d => d.added).length
+    const removed = diff.filter(d => d.removed).length
+    if (added > 0 && removed > 0)
+      body = `${logo} VulnCheck has detected ${copyTotal} with  **${added}** new and **${removed}** removed\n\n`
+    else if (added > 0 && removed === 0)
+      body = `${logo} VulnCheck has detected ${copyTotal} with **${added}** new\n\n`
+    else if (added === 0 && removed > 0)
+      body = `${logo} VulnCheck has detected ${copyTotal} with  **${removed}** removed\n\n`
   } else {
-    body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}\n\n`
+    body = `${logo} VulnCheck has detected ${copyTotal}\n\n`
   }
 
   const headers = [
