@@ -57,3 +57,4 @@ following steps:
 1. **Pushing the new tag to the remote:** Finally, the script pushes the new tag
    to the remote repository. From here, you will need to create a new release in
    GitHub and users can easily reference the new tag in their workflows.
+
