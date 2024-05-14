@@ -119,7 +119,7 @@ async function comment(
   const rows: TableRow[] = output.vulnerabilities.map(vuln => {
     const difference = diff?.find(d => d.cve === vuln.cve)
     return {
-      rows: [
+      cells: [
         {
           value: difference
             ? `${difference.added ? added : removed} ${vuln.name}`
