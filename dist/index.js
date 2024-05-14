@@ -34104,7 +34104,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-one -f');
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34178,7 +34178,7 @@ async function comment(token, output, signature, diff, previous) {
         const added = diff.filter(d => d.added).length;
         const removed = diff.filter(d => d.removed).length;
         if (added > 0 && removed > 0)
-            body = `${logo} VulnCheck has detected ${copyTotal} with  **${added}** new and **${removed}** removed\n\n`;
+            body = `${logo} VulnCheck has detected ${copyTotal} with **${added}** new and **${removed}** removed\n\n`;
         else if (added > 0 && removed === 0)
             body = `${logo} VulnCheck has detected ${copyTotal} with **${added}** new\n\n`;
         else if (added === 0 && removed > 0)
