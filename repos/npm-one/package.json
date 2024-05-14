@@ -9,7 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@dcl/single-sign-on-client": "0.0.14",
     "airtable": "0.11.5"
   }
 }

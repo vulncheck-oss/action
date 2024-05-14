@@ -34042,8 +34042,15 @@ async function run() {
             owner: 'vulncheck-oss',
             repo: 'cli',
         });
-        if (command === 'scan') {
-            await (0, scan_1.scan)();
+        switch (command) {
+            case 'scan': {
+                const result = await (0, scan_1.scan)();
+                if (result.failed)
+                    core.setFailed(result.failed);
+                break;
+            }
+            default:
+                core.setFailed(`Unknown command: ${command}`);
         }
     }
     catch (error) {
@@ -34097,33 +34104,48 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
-    const output = JSON.parse(await fs.readFile('output.json', 'utf8'));
+    await (0, exec_1.exec)('vci scan ./repos/npm-one -f');
+    const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
-    hash.update(JSON.stringify(output));
+    hash.update(JSON.stringify(result));
     const signature = hash.digest('hex');
-    core.setOutput('scan-count', output.vulnerabilities.length.toString());
+    core.setOutput('scan-count', result.vulnerabilities.length.toString());
     core.setOutput('scan-signature', signature);
-    core.setOutput('scan-output', JSON.stringify(output));
+    core.setOutput('scan-output', JSON.stringify(result));
     if (github.context.payload.pull_request &&
-        output.vulnerabilities.length > 0) {
+        result.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
         const lastComment = await getLastComment(token);
         if (!lastComment) {
             core.info('No scan result found yet, commenting');
-            comment(token, output, signature);
+            comment(token, result, signature);
         }
         if (lastComment && lastComment.signature !== signature) {
             core.info('Different scan result found, commenting the change');
-            // commentChange(token, output, lastComment)
+            comment(token, result, signature, scanDiff(result, lastComment.result), lastComment.result);
         }
         if (lastComment && lastComment.signature === signature) {
             core.info('Same scan result found, skipping comment');
         }
     }
-    return output;
+    if (result.vulnerabilities.length > 0) {
+        result.failed = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`;
+    }
+    return result;
 }
 exports.scan = scan;
+function scanDiff(cur, prev) {
+    const diff = [];
+    cur.vulnerabilities.map(vuln => {
+        if (!prev.vulnerabilities.find(pv => pv.cve === vuln.cve))
+            diff.push({ cve: vuln.cve, added: true });
+    });
+    prev.vulnerabilities.map(vuln => {
+        if (!cur.vulnerabilities.find(cv => cv.cve === vuln.cve))
+            diff.push({ cve: vuln.cve, removed: true });
+    });
+    return diff;
+}
 async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
         return undefined;
@@ -34134,6 +34156,7 @@ async function getLastComment(token) {
         repo: github.context.repo.repo,
         issue_number: github.context.payload.pull_request.number,
     });
+    comments.reverse();
     const regex = /<!-- vulncheck-scan-signature: ([a-f0-9]{64}) -->([\s\S]*?)<!-- vulncheck-scan-report: ({.*?}) -->/;
     for (const cmt of comments) {
         const match = regex.exec(cmt.body ?? '');
@@ -34146,13 +34169,28 @@ async function getLastComment(token) {
     }
     return undefined;
 }
-async function comment(token, output, signature) {
+async function comment(token, output, signature, diff, previous) {
     const octokit = github.getOctokit(token);
-    let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities\n\n`;
-    commentBody +=
-        '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n';
-    output.vulnerabilities.map(vuln => (commentBody += `| ${vuln.name} | ${vuln.version} | [${vuln.cve}](https://vulncheck.com/browse/cve/${vuln.cve}) | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`));
-    commentBody += `\n\n
+    let body;
+    if (diff) {
+        body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${diff.length} ${diff.length === 1 ? 'change' : 'changes'}**\n\n`;
+    }
+    else {
+        body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}\n\n`;
+    }
+    const headers = [
+        'Name',
+        'Version',
+        'CVE',
+        'CVSS Base',
+        'CVSS Temporal',
+        'Fixed Versions',
+    ];
+    if (diff && previous)
+        body += table(headers, rows([...output.vulnerabilities, ...previous.vulnerabilities], diff));
+    else
+        body + table(headers, rows(output.vulnerabilities));
+    body += `\n\n
 <br />
 <sup>Report generated by <a href="https://github.com/vulncheck-oss/action">The VulnCheck Action</a></sup>
 <!-- vulncheck-scan-signature: ${signature} -->
@@ -34163,10 +34201,57 @@ async function comment(token, output, signature) {
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,
             issue_number: github.context.payload.pull_request.number,
-            body: commentBody,
+            body,
             event: 'COMMENT',
         });
     }
+}
+function rows(vulns, diff) {
+    const added = '<img src="https://img.shields.io/badge/new-6667ab" />';
+    const removed = '<img src="https://img.shields.io/badge/removed-6ee7b7" />';
+    const cves = [];
+    const output = [];
+    for (const vuln of vulns) {
+        const difference = diff?.find(d => d.cve === vuln.cve);
+        if (!cves.includes(vuln.cve)) {
+            output.push({
+                cells: [
+                    {
+                        value: difference
+                            ? `${difference.added ? added : removed} ${vuln.name}`
+                            : vuln.name,
+                    },
+                    { value: vuln.version },
+                    {
+                        value: vuln.cve,
+                        link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+                    },
+                    { value: vuln.cvss_base_score },
+                    { value: vuln.cvss_temporal_score },
+                    { value: vuln.fixed_versions },
+                ],
+            });
+        }
+        cves.push(vuln.cve);
+    }
+    return output;
+}
+function table(headers, tableRows) {
+    let output = '<table>\n';
+    output += '<tr>\n';
+    headers.map(header => {
+        output += `<th>${header}</th>\n`;
+    });
+    output += '</tr>\n';
+    tableRows.map(row => {
+        output += '<tr>\n';
+        row.cells.map(cell => (output += cell.link
+            ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
+            : `<td>${cell.value}</td>\n`));
+        output += '</tr>\n';
+    });
+    output += '</table>\n';
+    return output;
 }
 
 

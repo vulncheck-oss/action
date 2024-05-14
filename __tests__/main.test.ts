@@ -6,9 +6,11 @@
  * variables following the pattern `INPUT_<INPUT_NAME>`.
  */
 
+import type { ScanResult } from '../src/types'
 import * as core from '@actions/core'
 import * as main from '../src/main'
 import * as installModule from '../src/install'
+import * as scanModule from '../src/scan'
 
 // Mock the action's main function
 const runMock = jest.spyOn(main, 'run')
@@ -36,6 +38,12 @@ describe('action', () => {
     // Create a mock of the install function
     const installMock = jest.spyOn(installModule, 'install')
     installMock.mockImplementation(async () => {})
+
+    // Mock the scan function to be a no-op
+    const scanMock = jest.spyOn(scanModule, 'scan')
+    scanMock.mockImplementation(async (): Promise<ScanResult> => {
+      return { vulnerabilities: [] }
+    })
   })
 
   it('test placeholder', async () => {
@@ -55,6 +63,13 @@ describe('action', () => {
       typeof installModule.install
     >
     installMock.mockImplementation(async () => {})
+
+    const scanMock = scanModule.scan as jest.MockedFunction<
+      typeof scanModule.scan
+    >
+    scanMock.mockImplementation(async (): Promise<ScanResult> => {
+      return { vulnerabilities: [] }
+    })
 
     await main.run()
     expect(runMock).toHaveReturned()

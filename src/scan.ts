@@ -1,63 +1,78 @@
+import type {
+  ScanResult,
+  Comment,
+  ScanResultVulnDiff,
+  TableRow,
+  ScanResultVuln,
+} from './types'
+
 import crypto from 'crypto'
 import { exec } from '@actions/exec'
 import * as fs from 'fs/promises'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
-interface ScanResult {
-  vulnerabilities: ScanResultVulnerability[]
-}
-
-interface ScanResultVulnerability {
-  name: string
-  version: string
-  cve: string
-  cvss_base_score: string
-  cvss_temporal_score: string
-  fixed_versions: string
-}
-
-interface Comment {
-  signature: string
-  result: ScanResult
-}
-
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-two -f')
-  const output: ScanResult = JSON.parse(
+  await exec('vci scan ./repos/npm-one -f')
+  const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
 
   const hash = crypto.createHash('sha256')
-  hash.update(JSON.stringify(output))
+  hash.update(JSON.stringify(result))
   const signature = hash.digest('hex')
 
-  core.setOutput('scan-count', output.vulnerabilities.length.toString())
+  core.setOutput('scan-count', result.vulnerabilities.length.toString())
   core.setOutput('scan-signature', signature)
-  core.setOutput('scan-output', JSON.stringify(output))
+  core.setOutput('scan-output', JSON.stringify(result))
 
   if (
     github.context.payload.pull_request &&
-    output.vulnerabilities.length > 0
+    result.vulnerabilities.length > 0
   ) {
     const token = core.getInput('github-token', { required: true })
     const lastComment = await getLastComment(token)
 
     if (!lastComment) {
       core.info('No scan result found yet, commenting')
-      comment(token, output, signature)
+      comment(token, result, signature)
     }
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
-      // commentChange(token, output, lastComment)
+
+      comment(
+        token,
+        result,
+        signature,
+        scanDiff(result, lastComment.result),
+        lastComment.result,
+      )
     }
     if (lastComment && lastComment.signature === signature) {
       core.info('Same scan result found, skipping comment')
     }
   }
 
-  return output
+  if (result.vulnerabilities.length > 0) {
+    result.failed = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`
+  }
+
+  return result
+}
+
+function scanDiff(cur: ScanResult, prev: ScanResult): ScanResultVulnDiff[] {
+  const diff: ScanResultVulnDiff[] = []
+  cur.vulnerabilities.map(vuln => {
+    if (!prev.vulnerabilities.find(pv => pv.cve === vuln.cve))
+      diff.push({ cve: vuln.cve, added: true })
+  })
+  prev.vulnerabilities.map(vuln => {
+    if (!cur.vulnerabilities.find(cv => cv.cve === vuln.cve))
+      diff.push({ cve: vuln.cve, removed: true })
+  })
+
+  return diff
 }
 
 async function getLastComment(token: string): Promise<Comment | undefined> {
@@ -71,6 +86,8 @@ async function getLastComment(token: string): Promise<Comment | undefined> {
     repo: github.context.repo.repo,
     issue_number: github.context.payload.pull_request.number,
   })
+
+  comments.reverse()
 
   const regex =
     /<!-- vulncheck-scan-signature: ([a-f0-9]{64}) -->([\s\S]*?)<!-- vulncheck-scan-report: ({.*?}) -->/
@@ -91,20 +108,36 @@ async function comment(
   token: string,
   output: ScanResult,
   signature: string,
+  diff?: ScanResultVulnDiff[],
+  previous?: ScanResult,
 ): Promise<void> {
   const octokit = github.getOctokit(token)
 
-  let commentBody = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** vulnerabilities\n\n`
+  let body
 
-  commentBody +=
-    '| Name | Version | CVE | CVSS Base Score | CVSS Temporal Score | Fixed Versions |\n| ---- | ------- | --- | --------------- | ------------------ | -------------- |\n'
+  if (diff) {
+    body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${diff.length} ${diff.length === 1 ? 'change' : 'changes'}**\n\n`
+  } else {
+    body = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" /> VulnCheck has detected **${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}\n\n`
+  }
 
-  output.vulnerabilities.map(
-    vuln =>
-      (commentBody += `| ${vuln.name} | ${vuln.version} | [${vuln.cve}](https://vulncheck.com/browse/cve/${vuln.cve}) | ${vuln.cvss_base_score} | ${vuln.cvss_temporal_score} | ${vuln.fixed_versions} |\n`),
-  )
+  const headers = [
+    'Name',
+    'Version',
+    'CVE',
+    'CVSS Base',
+    'CVSS Temporal',
+    'Fixed Versions',
+  ]
 
-  commentBody += `\n\n
+  if (diff && previous)
+    body += table(
+      headers,
+      rows([...output.vulnerabilities, ...previous.vulnerabilities], diff),
+    )
+  else body + table(headers, rows(output.vulnerabilities))
+
+  body += `\n\n
 <br />
 <sup>Report generated by <a href="https://github.com/vulncheck-oss/action">The VulnCheck Action</a></sup>
 <!-- vulncheck-scan-signature: ${signature} -->
@@ -116,8 +149,66 @@ async function comment(
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       issue_number: github.context.payload.pull_request.number,
-      body: commentBody,
+      body,
       event: 'COMMENT',
     })
   }
+}
+
+function rows(
+  vulns: ScanResultVuln[],
+  diff?: ScanResultVulnDiff[],
+): TableRow[] {
+  const added = '<img src="https://img.shields.io/badge/new-6667ab" />'
+  const removed = '<img src="https://img.shields.io/badge/removed-6ee7b7" />'
+  const cves: string[] = []
+  const output: TableRow[] = []
+  for (const vuln of vulns) {
+    const difference = diff?.find(d => d.cve === vuln.cve)
+    if (!cves.includes(vuln.cve)) {
+      output.push({
+        cells: [
+          {
+            value: difference
+              ? `${difference.added ? added : removed} ${vuln.name}`
+              : vuln.name,
+          },
+          { value: vuln.version },
+          {
+            value: vuln.cve,
+            link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+          },
+          { value: vuln.cvss_base_score },
+          { value: vuln.cvss_temporal_score },
+          { value: vuln.fixed_versions },
+        ],
+      })
+    }
+    cves.push(vuln.cve)
+  }
+  return output
+}
+
+function table(headers: string[], tableRows: TableRow[]): string {
+  let output = '<table>\n'
+  output += '<tr>\n'
+  headers.map(header => {
+    output += `<th>${header}</th>\n`
+  })
+  output += '</tr>\n'
+
+  tableRows.map(row => {
+    output += '<tr>\n'
+    row.cells.map(
+      cell =>
+        (output += cell.link
+          ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
+          : `<td>${cell.value}</td>\n`),
+    )
+    output += '</tr>\n'
+  })
+
+  output += '</table>\n'
+
+  return output
 }
