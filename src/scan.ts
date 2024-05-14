@@ -73,6 +73,8 @@ async function getLastComment(token: string): Promise<Comment | undefined> {
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
     issue_number: github.context.payload.pull_request.number,
+    sort: 'created',
+    direction: 'desc',
   })
 
   const regex =

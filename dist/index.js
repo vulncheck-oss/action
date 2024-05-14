@@ -34156,6 +34156,8 @@ async function getLastComment(token) {
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         issue_number: github.context.payload.pull_request.number,
+        sort: 'created',
+        direction: 'desc',
     });
     const regex = /<!-- vulncheck-scan-signature: ([a-f0-9]{64}) -->([\s\S]*?)<!-- vulncheck-scan-report: ({.*?}) -->/;
     for (const cmt of comments) {
