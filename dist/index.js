@@ -34103,7 +34103,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-seven -f');
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34114,6 +34114,9 @@ async function scan() {
     if (github.context.payload.pull_request &&
         result.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
+        const baseThreshold = core.getInput('scan-cvss-base-threshold');
+        const temporalThreshold = core.getInput('cvss-base-threshold');
+        console.log('thresholds', baseThreshold, temporalThreshold);
         const lastComment = await getLastComment(token);
         if (!lastComment) {
             core.info('No scan result found yet, commenting');
