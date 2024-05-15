@@ -27,6 +27,8 @@ export interface Comment {
 export interface TableCell {
   value: string
   link?: string
+  strike?: boolean
+  bold?: boolean
 }
 
 export interface TableRow {

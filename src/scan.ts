@@ -14,7 +14,7 @@ import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-four -f')
+  await exec('vci scan ./repos/npm-seven -f')
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
@@ -183,14 +183,32 @@ function rows(
               ? `${difference.added ? added : fixed} ${vuln.name}`
               : vuln.name,
           },
-          { value: vuln.version },
+          {
+            value: vuln.version,
+            bold: difference?.added,
+            strike: difference?.removed,
+          },
           {
             value: vuln.cve,
             link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+            bold: difference?.added,
+            strike: difference?.removed,
           },
-          { value: vuln.cvss_base_score },
-          { value: vuln.cvss_temporal_score },
-          { value: vuln.fixed_versions },
+          {
+            value: vuln.cvss_base_score,
+            bold: difference?.added,
+            strike: difference?.removed,
+          },
+          {
+            value: vuln.cvss_temporal_score,
+            bold: difference?.added,
+            strike: difference?.removed,
+          },
+          {
+            value: vuln.fixed_versions,
+            bold: difference?.added,
+            strike: difference?.removed,
+          },
         ],
       })
     }
@@ -199,6 +217,34 @@ function rows(
   return output
 }
 
+function table(headers: string[], tableRows: TableRow[]): string {
+  let output = `$[headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
+
+  // Add rows
+  tableRows.map(row => {
+    output = `${output}${row.cells
+      .map(cell => {
+        let cellValue = cell.link ? `[${cell.value}](${cell.link})` : cell.value
+
+        switch (true) {
+          case cell.strike:
+            cellValue = `~~${cellValue}~~`
+            break
+          case cell.bold:
+            cellValue = `**${cellValue}**`
+            break
+          // Add more cases here as needed
+        }
+
+        return cellValue
+      })
+      .join(' | ')} \n`
+  })
+
+  return output
+}
+
+/*
 function table(headers: string[], tableRows: TableRow[]): string {
   let output = '<table>\n'
   output += '<tr>\n'
@@ -222,3 +268,4 @@ function table(headers: string[], tableRows: TableRow[]): string {
 
   return output
 }
+*/
