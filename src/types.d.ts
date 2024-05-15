@@ -39,6 +39,7 @@ export interface TableCell {
 export interface TableRow {
   cells: TableCell[]
   bold?: boolean
+  underline?: boolean
   added?: boolean
   removed?: boolean
 }

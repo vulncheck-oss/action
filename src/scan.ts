@@ -210,9 +210,9 @@ async function comment(
   else body += table(headers, rows(thresholds, output.vulnerabilities))
 
   if (thresholds.base !== '')
-    body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are in bold`
+    body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`
   if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to **${thresholds.base}** - matches are in bold`
+    body += `\n> CVSS temporal threshold set to **${thresholds.base}** - matches are underlined`
 
   body += `\n\n
 <br />
@@ -246,7 +246,7 @@ function rows(
       thresholds.temporalMatches.find(v => v.cve === vuln.cve) !== undefined
     if (!cves.includes(vuln.cve)) {
       output.push({
-        bold: inThreshold,
+        underline: inThreshold,
         added: difference?.added,
         removed: difference?.removed,
         cells: [
@@ -290,9 +290,9 @@ function table(headers: string[], tableRows: TableRow[]): string {
       suffix = '**'
     }
 
-    if (row.bold) {
-      prefix = '**'
-      suffix = '**'
+    if (row.underline) {
+      prefix = '<ins>'
+      suffix = '</ins>'
     }
 
     output = `${output}${row.cells
