@@ -34272,11 +34272,11 @@ function table(headers, tableRows) {
             switch (true) {
                 case cell.removed:
                     cellValue =
-                        index === 0 ? `${fixed} ~~${cellValue}~~` : `~~${cellValue}~~`;
+                        index === 1 ? `${fixed} ~~${cellValue}~~` : `~~${cellValue}~~`;
                     break;
                 case cell.added:
                     cellValue =
-                        index === 0 ? `${added} **${cellValue}**` : `**${cellValue}**`;
+                        index === 1 ? `${added} **${cellValue}**` : `**${cellValue}**`;
                     break;
                 // Add more cases here as needed
             }
