@@ -34263,7 +34263,7 @@ function rows(vulns, diff) {
     return output;
 }
 function table(headers, tableRows) {
-    let output = `$[headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
+    let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
     // Add rows
     tableRows.map(row => {
         output = `${output}${row.cells
