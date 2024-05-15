@@ -34116,7 +34116,7 @@ async function scan() {
         const token = core.getInput('github-token', { required: true });
         const baseThreshold = core.getInput('scan-cvss-base-threshold');
         const temporalThreshold = core.getInput('cvss-base-threshold');
-        console.log('thresholds', baseThreshold, temporalThreshold);
+        console.log('thresholds', baseThreshold === '', temporalThreshold === undefined);
         const lastComment = await getLastComment(token);
         if (!lastComment) {
             core.info('No scan result found yet, commenting');

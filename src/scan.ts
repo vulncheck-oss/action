@@ -35,7 +35,11 @@ export async function scan(): Promise<ScanResult> {
 
     const baseThreshold = core.getInput('scan-cvss-base-threshold')
     const temporalThreshold = core.getInput('cvss-base-threshold')
-    console.log('thresholds', baseThreshold, temporalThreshold)
+    console.log(
+      'thresholds',
+      baseThreshold === '',
+      temporalThreshold === undefined,
+    )
     const lastComment = await getLastComment(token)
 
     if (!lastComment) {
