@@ -33961,13 +33961,13 @@ const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(7147));
 /**
  * Install the latest release of the VulnCheck CLI
- * @param pat The GitHub Personal Access Token to use for the installation.
+ * @param token The GitHub Token to use for the installation.
  * @param owner The owner of the repository to install from.
  * @param repo The repository to install from.
  * @returns {Promise<void>} Resolves when the installation is complete.
  */
-async function install({ pat, owner, repo, }) {
-    const octokit = github.getOctokit(pat);
+async function install({ token, owner, repo, }) {
+    const octokit = github.getOctokit(token);
     const { data: release } = await octokit.rest.repos.getLatestRelease({
         owner,
         repo,
@@ -33980,7 +33980,6 @@ async function install({ pat, owner, repo, }) {
         responseType: 'arraybuffer',
         headers: {
             Accept: 'application/octet-stream',
-            Authorization: `token ${pat}`,
         },
     });
     fs.writeFileSync(asset.name, response.data);
@@ -34035,10 +34034,10 @@ const scan_1 = __nccwpck_require__(8981);
 async function run() {
     try {
         const command = core.getInput('command');
-        const pat = core.getInput('cli_pat', { required: true });
+        const token = core.getInput('github-token', { required: true });
         process.env.VC_TOKEN = core.getInput('token', { required: true });
         await (0, install_1.install)({
-            pat,
+            token,
             owner: 'vulncheck-oss',
             repo: 'cli',
         });
@@ -34104,7 +34103,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-one -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34178,9 +34177,9 @@ async function comment(token, output, signature, diff, previous) {
         const added = diff.filter(d => d.added).length;
         const fixed = diff.filter(d => d.removed).length;
         if (added > 0 && fixed > 0)
-            body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** new and **${fixed}** fixed\n\n`;
+            body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** added and **${fixed}** fixed\n\n`;
         else if (added > 0 && fixed === 0)
-            body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** new\n\n`;
+            body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** added\n\n`;
         else if (added === 0 && fixed > 0)
             body = `${logo} VulnCheck has detected a total of ${copyTotal} with  **${fixed}** fixed\n\n`;
     }
@@ -34216,7 +34215,7 @@ async function comment(token, output, signature, diff, previous) {
     }
 }
 function rows(vulns, diff) {
-    const added = '<img src="https://img.shields.io/badge/new-dc2626" />';
+    const added = '<img src="https://img.shields.io/badge/added-dc2626" />';
     const fixed = '<img src="https://img.shields.io/badge/fixed-10b981" />';
     const cves = [];
     const output = [];

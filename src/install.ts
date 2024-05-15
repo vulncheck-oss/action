@@ -15,7 +15,7 @@ export async function install({
   owner,
   repo,
 }: {
-  pat: string
+  token: string
   owner: string
   repo: string
 }): Promise<void> {
