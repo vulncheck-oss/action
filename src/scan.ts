@@ -229,11 +229,15 @@ function table(headers: string[], tableRows: TableRow[]): string {
         switch (true) {
           case cell.removed:
             cellValue =
-              index === 1 ? `${fixed} ~~${cellValue}~~` : `~~${cellValue}~~`
+              headers[index] === 'Name'
+                ? `${fixed} ~~${cellValue}~~`
+                : `~~${cellValue}~~`
             break
           case cell.added:
             cellValue =
-              index === 1 ? `${added} **${cellValue}**` : `**${cellValue}**`
+              headers[index] === 'Name'
+                ? `${added} **${cellValue}**`
+                : `**${cellValue}**`
             break
           // Add more cases here as needed
         }
