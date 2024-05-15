@@ -24,5 +24,3 @@ Simple example:
     command: scan
     token: ${{ secrets.VC_TOKEN }}
 ```
-
-
