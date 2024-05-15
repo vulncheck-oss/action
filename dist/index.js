@@ -34104,7 +34104,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan ./repos/npm-one -f');
+    await (0, exec_1.exec)('vci scan ./repos/npm-two -f');
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34216,8 +34216,8 @@ async function comment(token, output, signature, diff, previous) {
     }
 }
 function rows(vulns, diff) {
-    const added = '<img src="https://img.shields.io/badge/new-6667ab" />';
-    const fixed = '<img src="https://img.shields.io/badge/fixed-dc2626" />';
+    const added = '<img src="https://img.shields.io/badge/new-dc2626" />';
+    const fixed = '<img src="https://img.shields.io/badge/fixed-10b981" />';
     const cves = [];
     const output = [];
     for (const vuln of vulns) {

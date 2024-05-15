@@ -14,7 +14,7 @@ import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-one -f')
+  await exec('vci scan ./repos/npm-two -f')
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
@@ -169,8 +169,8 @@ function rows(
   vulns: ScanResultVuln[],
   diff?: ScanResultVulnDiff[],
 ): TableRow[] {
-  const added = '<img src="https://img.shields.io/badge/new-6667ab" />'
-  const fixed = '<img src="https://img.shields.io/badge/fixed-dc2626" />'
+  const added = '<img src="https://img.shields.io/badge/new-dc2626" />'
+  const fixed = '<img src="https://img.shields.io/badge/fixed-10b981" />'
   const cves: string[] = []
   const output: TableRow[] = []
   for (const vuln of vulns) {
