@@ -3,9 +3,11 @@
 </p>
 
 # The VulnCheck Action
+
 > Bring VulnCheck into your CI/CD pipeline.
 
-This Github Action uses the VulnCheck CLI to integrte security-related tasks into your CI/CD pipeline.
+This Github Action uses the VulnCheck CLI to integrte security-related tasks
+into your CI/CD pipeline.
 
 ![CI](https://github.com/vulncheck-oss/action/actions/workflows/ci.yml/badge.svg)
 [![Check dist/](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml)
