@@ -16,10 +16,10 @@ inputs:
   command:
     description: 'Command to run'
     default: 'scan'
-  scan_cvss_base_threshold:
+  scan-cvss-base-threshold:
     description: 'CVSS Threshold to fail the workflow'
     required: false
-  scan_cvss_temporal_threshold:
+  scan-cvss-temporal-threshold:
     description: 'CVSS Temporal Threshold to fail the workflow'
     required: false
 outputs:

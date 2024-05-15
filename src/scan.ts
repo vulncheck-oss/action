@@ -14,7 +14,7 @@ import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-two -f')
+  await exec('vci scan ./repos/npm-seven -f')
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
@@ -32,6 +32,10 @@ export async function scan(): Promise<ScanResult> {
     result.vulnerabilities.length > 0
   ) {
     const token = core.getInput('github-token', { required: true })
+
+    const baseThreshold = core.getInput('scan-cvss-base-threshold')
+    const temporalThreshold = core.getInput('cvss-base-threshold')
+    console.log('thresholds', baseThreshold, temporalThreshold)
     const lastComment = await getLastComment(token)
 
     if (!lastComment) {
