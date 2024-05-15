@@ -25,15 +25,15 @@ on:
     branches:
       - main
 
-permissions: write-all      
+permissions: write-all
 
 jobs:
   scan:
     name: Scan with VulnCheck
     runs-on: ubuntu-latest
     steps:
-    - uses: vulncheck-oss/action@v1
-      with:
-        command: scan
-        token: ${{ secrets.VC_TOKEN }}
+      - uses: vulncheck-oss/action@v1
+        with:
+          command: scan
+          token: ${{ secrets.VC_TOKEN }}
 ```
