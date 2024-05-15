@@ -34046,6 +34046,8 @@ async function run() {
                 const result = await (0, scan_1.scan)();
                 if (result.failed)
                     core.setFailed(result.failed);
+                if (result.success)
+                    core.info(result.success);
                 break;
             }
             default:
@@ -34104,7 +34106,19 @@ const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
     core.info('Running CLI command: scan');
     await (0, exec_1.exec)('vci scan ./repos/npm-seven -f');
+    const thresholds = {
+        base: core.getInput('scan-cvss-base-threshold'),
+        temporal: core.getInput('scan-cvss-temporal-threshold'),
+        baseMatches: [],
+        temporalMatches: [],
+    };
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
+    if (thresholds.base !== '') {
+        thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
+    }
+    if (thresholds.temporal !== '') {
+        thresholds.temporalMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal));
+    }
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
     const signature = hash.digest('hex');
@@ -34114,24 +34128,49 @@ async function scan() {
     if (github.context.payload.pull_request &&
         result.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
-        const baseThreshold = core.getInput('scan-cvss-base-threshold');
-        const temporalThreshold = core.getInput('cvss-base-threshold');
-        console.log('thresholds', baseThreshold === '', temporalThreshold === undefined);
         const lastComment = await getLastComment(token);
         if (!lastComment) {
             core.info('No scan result found yet, commenting');
-            comment(token, result, signature);
+            comment(thresholds, token, result, signature);
         }
         if (lastComment && lastComment.signature !== signature) {
             core.info('Different scan result found, commenting the change');
-            comment(token, result, signature, scanDiff(result, lastComment.result), lastComment.result);
+            comment(thresholds, token, result, signature, scanDiff(result, lastComment.result), lastComment.result);
         }
         if (lastComment && lastComment.signature === signature) {
-            core.info('Same scan result found, skipping comment');
+            core.info('Same scan result signature matches, skipping comment');
         }
     }
+    let copy = `VulnCheck has detected **${result.vulnerabilities.length}** vulnerabilities`;
     if (result.vulnerabilities.length > 0) {
-        result.failed = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`;
+        if (thresholds.baseMatches.length > 0) {
+            copy += ` | ${thresholds.baseMatches.length} found above or equal to the CVSS base score threshold of ${thresholds.base}`;
+        }
+        if (thresholds.temporalMatches.length > 0) {
+            copy += ` | ${thresholds.temporalMatches.length} found above or equal to the CVSS temporal score threshold of ${thresholds.temporal}`;
+        }
+        // if we have matches, we have thresholds, fail
+        if (thresholds.baseMatches.length > 0 ||
+            thresholds.temporalMatches.length > 0) {
+            result.failed = copy;
+            return result;
+        }
+        // if we have no thresholds, fail for vulns found
+        if (thresholds.base === '' && thresholds.temporal === '') {
+            result.failed = copy;
+            return result;
+        }
+        if (thresholds.base !== '' && thresholds.baseMatches.length > 0) {
+            result.failed = copy;
+            return result;
+        }
+        if (thresholds.temporal !== '' && thresholds.temporalMatches.length > 0) {
+            result.failed = copy;
+            return result;
+        }
+    }
+    else {
+        result.success = copy;
     }
     return result;
 }
@@ -34171,7 +34210,7 @@ async function getLastComment(token) {
     }
     return undefined;
 }
-async function comment(token, output, signature, diff, previous) {
+async function comment(thresholds, token, output, signature, diff, previous) {
     const octokit = github.getOctokit(token);
     let body = '';
     const copyTotal = `**${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}`;
@@ -34198,9 +34237,9 @@ async function comment(token, output, signature, diff, previous) {
         'Fixed Versions',
     ];
     if (diff && previous)
-        body += table(headers, rows([...output.vulnerabilities, ...previous.vulnerabilities], diff));
+        body += table(headers, rows(thresholds, [...output.vulnerabilities, ...previous.vulnerabilities], diff));
     else
-        body += table(headers, rows(output.vulnerabilities));
+        body += table(headers, rows(thresholds, output.vulnerabilities));
     body += `\n\n
 <br />
 <sup>Report generated by <a href="https://github.com/vulncheck-oss/action">VulnCheck</a></sup>
@@ -34217,14 +34256,16 @@ async function comment(token, output, signature, diff, previous) {
         });
     }
 }
-function rows(vulns, diff) {
+function rows(thresholds, vulns, diff) {
     const cves = [];
     const output = [];
     for (const vuln of vulns) {
         const difference = diff?.find(d => d.cve === vuln.cve);
+        const inThreshold = thresholds.baseMatches.find(v => v.cve === vuln.cve) ||
+            thresholds.temporalMatches.find(v => v.cve === vuln.cve);
         if (!cves.includes(vuln.cve)) {
             output.push({
-                added: difference?.added,
+                added: difference?.added || inThreshold ? true : false,
                 removed: difference?.removed,
                 cells: [
                     { value: vuln.name },

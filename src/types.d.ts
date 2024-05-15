@@ -1,3 +1,10 @@
+export interface ScanThreshold {
+  base: string
+  temporal: string
+  baseMatches: ScanResultVuln[]
+  temporalMatches: ScanResultVuln[]
+}
+
 export interface ScanResultVuln {
   name: string
   version: string

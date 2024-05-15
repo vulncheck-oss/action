@@ -1,4 +1,5 @@
 import type {
+  ScanThreshold,
   ScanResult,
   Comment,
   ScanResultVulnDiff,
@@ -15,9 +16,30 @@ import * as github from '@actions/github'
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
   await exec('vci scan ./repos/npm-seven -f')
+
+  const thresholds: ScanThreshold = {
+    base: core.getInput('scan-cvss-base-threshold'),
+    temporal: core.getInput('scan-cvss-temporal-threshold'),
+    baseMatches: [],
+    temporalMatches: [],
+  }
+
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
+
+  if (thresholds.base !== '') {
+    thresholds.baseMatches = result.vulnerabilities.filter(
+      vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base),
+    )
+  }
+
+  if (thresholds.temporal !== '') {
+    thresholds.temporalMatches = result.vulnerabilities.filter(
+      vuln =>
+        parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal),
+    )
+  }
 
   const hash = crypto.createHash('sha256')
   hash.update(JSON.stringify(result))
@@ -32,24 +54,17 @@ export async function scan(): Promise<ScanResult> {
     result.vulnerabilities.length > 0
   ) {
     const token = core.getInput('github-token', { required: true })
-
-    const baseThreshold = core.getInput('scan-cvss-base-threshold')
-    const temporalThreshold = core.getInput('cvss-base-threshold')
-    console.log(
-      'thresholds',
-      baseThreshold === '',
-      temporalThreshold === undefined,
-    )
     const lastComment = await getLastComment(token)
 
     if (!lastComment) {
       core.info('No scan result found yet, commenting')
-      comment(token, result, signature)
+      comment(thresholds, token, result, signature)
     }
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
 
       comment(
+        thresholds,
         token,
         result,
         signature,
@@ -58,12 +73,46 @@ export async function scan(): Promise<ScanResult> {
       )
     }
     if (lastComment && lastComment.signature === signature) {
-      core.info('Same scan result found, skipping comment')
+      core.info('Same scan result signature matches, skipping comment')
     }
   }
+  let copy = `VulnCheck has detected **${result.vulnerabilities.length}** vulnerabilities`
 
   if (result.vulnerabilities.length > 0) {
-    result.failed = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`
+    if (thresholds.baseMatches.length > 0) {
+      copy += ` | ${thresholds.baseMatches.length} found above or equal to the CVSS base score threshold of ${thresholds.base}`
+    }
+
+    if (thresholds.temporalMatches.length > 0) {
+      copy += ` | ${thresholds.temporalMatches.length} found above or equal to the CVSS temporal score threshold of ${thresholds.temporal}`
+    }
+
+    // if we have matches, we have thresholds, fail
+    if (
+      thresholds.baseMatches.length > 0 ||
+      thresholds.temporalMatches.length > 0
+    ) {
+      result.failed = copy
+      return result
+    }
+
+    // if we have no thresholds, fail for vulns found
+    if (thresholds.base === '' && thresholds.temporal === '') {
+      result.failed = copy
+      return result
+    }
+
+    if (thresholds.base !== '' && thresholds.baseMatches.length > 0) {
+      result.failed = copy
+      return result
+    }
+
+    if (thresholds.temporal !== '' && thresholds.temporalMatches.length > 0) {
+      result.failed = copy
+      return result
+    }
+  } else {
+    result.success = copy
   }
 
   return result
@@ -113,6 +162,7 @@ async function getLastComment(token: string): Promise<Comment | undefined> {
 }
 
 async function comment(
+  thresholds: ScanThreshold,
   token: string,
   output: ScanResult,
   signature: string,
@@ -151,9 +201,13 @@ async function comment(
   if (diff && previous)
     body += table(
       headers,
-      rows([...output.vulnerabilities, ...previous.vulnerabilities], diff),
+      rows(
+        thresholds,
+        [...output.vulnerabilities, ...previous.vulnerabilities],
+        diff,
+      ),
     )
-  else body += table(headers, rows(output.vulnerabilities))
+  else body += table(headers, rows(thresholds, output.vulnerabilities))
 
   body += `\n\n
 <br />
@@ -174,6 +228,7 @@ async function comment(
 }
 
 function rows(
+  thresholds: ScanThreshold,
   vulns: ScanResultVuln[],
   diff?: ScanResultVulnDiff[],
 ): TableRow[] {
@@ -181,9 +236,12 @@ function rows(
   const output: TableRow[] = []
   for (const vuln of vulns) {
     const difference = diff?.find(d => d.cve === vuln.cve)
+    const inThreshold =
+      thresholds.baseMatches.find(v => v.cve === vuln.cve) ||
+      thresholds.temporalMatches.find(v => v.cve === vuln.cve)
     if (!cves.includes(vuln.cve)) {
       output.push({
-        added: difference?.added,
+        added: difference?.added || inThreshold ? true : false,
         removed: difference?.removed,
         cells: [
           { value: vuln.name },
