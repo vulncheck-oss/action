@@ -34215,8 +34215,8 @@ async function comment(token, output, signature, diff, previous) {
     }
 }
 function rows(vulns, diff) {
-    const added = '<img src="https://img.shields.io/badge/found-dc2626" />';
-    const fixed = '<img src="https://img.shields.io/badge/fixed-10b981" />';
+    const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
+    const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
     const cves = [];
     const output = [];
     for (const vuln of vulns) {
