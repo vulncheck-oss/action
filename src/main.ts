@@ -22,7 +22,7 @@ export async function run(): Promise<void> {
       case 'scan': {
         const result = await scan()
         if (result.failed) core.setFailed(result.failed)
-        if (result.success) core.info(result.success)
+        if (result.success) core.notice(result.success)
         break
       }
       default:

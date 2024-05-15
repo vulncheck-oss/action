@@ -34047,7 +34047,7 @@ async function run() {
                 if (result.failed)
                     core.setFailed(result.failed);
                 if (result.success)
-                    core.info(result.success);
+                    core.notice(result.success);
                 break;
             }
             default:
