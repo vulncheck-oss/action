@@ -57,6 +57,7 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
+          cvss-base-threshold: 7.3
 
       - name: Retrieve Output
         id: output
