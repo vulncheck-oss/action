@@ -57,7 +57,6 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
-          scan-cvss-temporal-threshold: 7.0
 
       - name: Retrieve Output
         id: output
