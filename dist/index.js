@@ -34228,6 +34228,8 @@ function rows(vulns, diff) {
                         value: difference
                             ? `${difference.added ? added : fixed} ${vuln.name}`
                             : vuln.name,
+                        bold: difference?.added,
+                        strike: difference?.removed,
                     },
                     {
                         value: vuln.version,
