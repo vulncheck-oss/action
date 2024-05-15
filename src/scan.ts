@@ -76,7 +76,7 @@ export async function scan(): Promise<ScanResult> {
       core.info('Same scan result signature matches, skipping comment')
     }
   }
-  let copy = `VulnCheck has detected **${result.vulnerabilities.length}** vulnerabilities`
+  let copy = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`
 
   if (result.vulnerabilities.length > 0) {
     if (thresholds.baseMatches.length > 0) {
