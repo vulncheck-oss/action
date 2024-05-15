@@ -34221,38 +34221,18 @@ function rows(vulns, diff) {
         const difference = diff?.find(d => d.cve === vuln.cve);
         if (!cves.includes(vuln.cve)) {
             output.push({
+                added: difference?.added,
+                removed: difference?.removed,
                 cells: [
-                    {
-                        value: vuln.name,
-                        added: difference?.added,
-                        removed: difference?.removed,
-                    },
-                    {
-                        value: vuln.version,
-                        added: difference?.added,
-                        removed: difference?.removed,
-                    },
+                    { value: vuln.name },
+                    { value: vuln.version },
                     {
                         value: vuln.cve,
                         link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
-                        added: difference?.added,
-                        removed: difference?.removed,
                     },
-                    {
-                        value: vuln.cvss_base_score,
-                        added: difference?.added,
-                        removed: difference?.removed,
-                    },
-                    {
-                        value: vuln.cvss_temporal_score,
-                        added: difference?.added,
-                        removed: difference?.removed,
-                    },
-                    {
-                        value: vuln.fixed_versions,
-                        added: difference?.added,
-                        removed: difference?.removed,
-                    },
+                    { value: vuln.cvss_base_score },
+                    { value: vuln.cvss_temporal_score },
+                    { value: vuln.fixed_versions },
                 ],
             });
         }
@@ -34265,26 +34245,20 @@ function table(headers, tableRows) {
     const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
     let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
     // Add rows
-    tableRows.map((row, index) => {
+    tableRows.map(row => {
+        let badge = '';
+        if (row.removed) {
+            badge = fixed;
+        }
+        if (row.added) {
+            badge = added;
+        }
         output = `${output}${row.cells
-            .map(cell => {
+            .map((cell, index) => {
             let cellValue = cell.link ? `[${cell.value}](${cell.link})` : cell.value;
-            switch (true) {
-                case cell.removed:
-                    console.log(index, headers[index]);
-                    cellValue =
-                        headers[index] === 'Name'
-                            ? `${fixed} ~~${cellValue}~~`
-                            : `~~${cellValue}~~`;
-                    break;
-                case cell.added:
-                    console.log(index, headers[index]);
-                    cellValue =
-                        headers[index] === 'Name'
-                            ? `${added} **${cellValue}**`
-                            : `**${cellValue}**`;
-                    break;
-                // Add more cases here as needed
+            // Add badge to the first cell
+            if (index === 0) {
+                cellValue = `${badge} ${cellValue}`;
             }
             return cellValue;
         })

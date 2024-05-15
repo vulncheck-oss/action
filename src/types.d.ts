@@ -26,11 +26,11 @@ export interface Comment {
 
 export interface TableCell {
   value: string
-  added?: boolean
-  removed?: boolean
   link?: string
 }
 
 export interface TableRow {
   cells: TableCell[]
+  added?: boolean
+  removed?: boolean
 }
