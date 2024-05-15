@@ -34113,6 +34113,7 @@ async function scan() {
         temporalMatches: [],
     };
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
+    console.log('result', result);
     if (thresholds.base !== '') {
         thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
     }
