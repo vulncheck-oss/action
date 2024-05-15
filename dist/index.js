@@ -34215,8 +34215,6 @@ async function comment(token, output, signature, diff, previous) {
     }
 }
 function rows(vulns, diff) {
-    const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
-    const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
     const cves = [];
     const output = [];
     for (const vuln of vulns) {
@@ -34225,37 +34223,35 @@ function rows(vulns, diff) {
             output.push({
                 cells: [
                     {
-                        value: difference
-                            ? `${difference.added ? added : fixed} ${vuln.name} `
-                            : vuln.name,
-                        bold: difference?.added,
-                        strike: difference?.removed,
+                        value: vuln.name,
+                        added: difference?.added,
+                        removed: difference?.removed,
                     },
                     {
                         value: vuln.version,
-                        bold: difference?.added,
-                        strike: difference?.removed,
+                        added: difference?.added,
+                        removed: difference?.removed,
                     },
                     {
                         value: vuln.cve,
                         link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
-                        bold: difference?.added,
-                        strike: difference?.removed,
+                        added: difference?.added,
+                        removed: difference?.removed,
                     },
                     {
                         value: vuln.cvss_base_score,
-                        bold: difference?.added,
-                        strike: difference?.removed,
+                        added: difference?.added,
+                        removed: difference?.removed,
                     },
                     {
                         value: vuln.cvss_temporal_score,
-                        bold: difference?.added,
-                        strike: difference?.removed,
+                        added: difference?.added,
+                        removed: difference?.removed,
                     },
                     {
                         value: vuln.fixed_versions,
-                        bold: difference?.added,
-                        strike: difference?.removed,
+                        added: difference?.added,
+                        removed: difference?.removed,
                     },
                 ],
             });
@@ -34265,18 +34261,22 @@ function rows(vulns, diff) {
     return output;
 }
 function table(headers, tableRows) {
+    const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
+    const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
     let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
     // Add rows
-    tableRows.map(row => {
+    tableRows.map((row, index) => {
         output = `${output}${row.cells
             .map(cell => {
             let cellValue = cell.link ? `[${cell.value}](${cell.link})` : cell.value;
             switch (true) {
-                case cell.strike:
-                    cellValue = `~~${cellValue}~~`;
+                case cell.removed:
+                    cellValue =
+                        index === 0 ? `${fixed} ~~${cellValue}~~` : `~~${cellValue}~~`;
                     break;
-                case cell.bold:
-                    cellValue = `**${cellValue}**`;
+                case cell.added:
+                    cellValue =
+                        index === 0 ? `${added} **${cellValue}**` : `**${cellValue}**`;
                     break;
                 // Add more cases here as needed
             }
