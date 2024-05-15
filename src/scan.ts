@@ -228,12 +228,14 @@ function table(headers: string[], tableRows: TableRow[]): string {
 
         switch (true) {
           case cell.removed:
+            console.log(index, headers[index])
             cellValue =
               headers[index] === 'Name'
                 ? `${fixed} ~~${cellValue}~~`
                 : `~~${cellValue}~~`
             break
           case cell.added:
+            console.log(index, headers[index])
             cellValue =
               headers[index] === 'Name'
                 ? `${added} **${cellValue}**`

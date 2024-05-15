@@ -34271,12 +34271,14 @@ function table(headers, tableRows) {
             let cellValue = cell.link ? `[${cell.value}](${cell.link})` : cell.value;
             switch (true) {
                 case cell.removed:
+                    console.log(index, headers[index]);
                     cellValue =
                         headers[index] === 'Name'
                             ? `${fixed} ~~${cellValue}~~`
                             : `~~${cellValue}~~`;
                     break;
                 case cell.added:
+                    console.log(index, headers[index]);
                     cellValue =
                         headers[index] === 'Name'
                             ? `${added} **${cellValue}**`
