@@ -13,9 +13,6 @@ inputs:
   token:
     description: 'VulnCheck Token'
     required: true
-  cli_pat:
-    description: 'A token with access to the CLI'
-    required: true
   command:
     description: 'Command to run'
     default: 'scan'
