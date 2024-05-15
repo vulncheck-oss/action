@@ -28,7 +28,17 @@ export async function scan(): Promise<ScanResult> {
     await fs.readFile('output.json', 'utf8'),
   )
 
-  console.log('result', result)
+  const hash = crypto.createHash('sha256')
+  hash.update(JSON.stringify(result))
+  const signature = hash.digest('hex')
+
+  if (result.vulnerabilities === null) {
+    core.setOutput('scan-count', 0)
+    core.setOutput('scan-signature', signature)
+    core.setOutput('scan-output', JSON.stringify(result))
+    result.success = 'No vulnerabilities found'
+    return result
+  }
 
   if (thresholds.base !== '') {
     thresholds.baseMatches = result.vulnerabilities.filter(
@@ -42,10 +52,6 @@ export async function scan(): Promise<ScanResult> {
         parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal),
     )
   }
-
-  const hash = crypto.createHash('sha256')
-  hash.update(JSON.stringify(result))
-  const signature = hash.digest('hex')
 
   core.setOutput('scan-count', result.vulnerabilities.length.toString())
   core.setOutput('scan-signature', signature)
