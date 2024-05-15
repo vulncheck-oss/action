@@ -203,13 +203,19 @@ function table(headers: string[], tableRows: TableRow[]): string {
   // Add rows
   tableRows.map(row => {
     let badge = ''
+    let prefix = ''
+    let suffix = ''
 
     if (row.removed) {
       badge = fixed
+      prefix = '~~'
+      suffix = '~~'
     }
 
     if (row.added) {
       badge = added
+      prefix = '**'
+      suffix = '**'
     }
 
     output = `${output}${row.cells
@@ -217,7 +223,9 @@ function table(headers: string[], tableRows: TableRow[]): string {
         let cellValue = cell.link ? `[${cell.value}](${cell.link})` : cell.value
         // Add badge to the first cell
         if (index === 0) {
-          cellValue = `${badge} ${cellValue}`
+          cellValue = `${badge} ${prefix}${cellValue}${suffix}`
+        } else {
+          cellValue = `${prefix}${cellValue}${suffix}`
         }
         return cellValue
       })
