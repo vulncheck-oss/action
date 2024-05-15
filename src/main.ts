@@ -9,11 +9,11 @@ import { scan } from './scan'
 export async function run(): Promise<void> {
   try {
     const command = core.getInput('command')
-    const pat = core.getInput('cli_pat', { required: true })
+    const token = core.getInput('github-token', { required: true })
     process.env.VC_TOKEN = core.getInput('token', { required: true })
 
     await install({
-      pat,
+      token,
       owner: 'vulncheck-oss',
       repo: 'cli',
     })

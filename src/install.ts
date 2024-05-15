@@ -5,13 +5,13 @@ import * as fs from 'fs'
 
 /**
  * Install the latest release of the VulnCheck CLI
- * @param pat The GitHub Personal Access Token to use for the installation.
+ * @param token The GitHub Token to use for the installation.
  * @param owner The owner of the repository to install from.
  * @param repo The repository to install from.
  * @returns {Promise<void>} Resolves when the installation is complete.
  */
 export async function install({
-  pat,
+  token,
   owner,
   repo,
 }: {
@@ -19,7 +19,7 @@ export async function install({
   owner: string
   repo: string
 }): Promise<void> {
-  const octokit = github.getOctokit(pat)
+  const octokit = github.getOctokit(token)
 
   const { data: release } = await octokit.rest.repos.getLatestRelease({
     owner,
@@ -38,7 +38,6 @@ export async function install({
     responseType: 'arraybuffer',
     headers: {
       Accept: 'application/octet-stream',
-      Authorization: `token ${pat}`,
     },
   })
 
