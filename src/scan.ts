@@ -212,7 +212,7 @@ async function comment(
   if (thresholds.base !== '')
     body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`
   if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to **${thresholds.base}** - matches are underlined`
+    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}** - matches are underlined`
 
   body += `\n\n
 <br />
