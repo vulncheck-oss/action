@@ -38,6 +38,7 @@ export interface TableCell {
 
 export interface TableRow {
   cells: TableCell[]
+  bold?: boolean
   added?: boolean
   removed?: boolean
 }

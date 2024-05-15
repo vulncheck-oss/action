@@ -210,9 +210,9 @@ async function comment(
   else body += table(headers, rows(thresholds, output.vulnerabilities))
 
   if (thresholds.base !== '')
-    body += `\n> CVSS base threshold set to ${thresholds.base} - matches are in bold`
+    body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are in bold`
   if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to ${thresholds.base} - matches are in bold`
+    body += `\n> CVSS temporal threshold set to **${thresholds.base}** - matches are in bold`
 
   body += `\n\n
 <br />
@@ -241,12 +241,13 @@ function rows(
   const output: TableRow[] = []
   for (const vuln of vulns) {
     const difference = diff?.find(d => d.cve === vuln.cve)
-    const inThreshold =
-      thresholds.baseMatches.find(v => v.cve === vuln.cve) ||
-      thresholds.temporalMatches.find(v => v.cve === vuln.cve)
+    const inThreshold: boolean =
+      thresholds.baseMatches.find(v => v.cve === vuln.cve) !== undefined ||
+      thresholds.temporalMatches.find(v => v.cve === vuln.cve) !== undefined
     if (!cves.includes(vuln.cve)) {
       output.push({
-        added: difference?.added || inThreshold ? true : false,
+        bold: inThreshold,
+        added: difference?.added,
         removed: difference?.removed,
         cells: [
           { value: vuln.name },
@@ -284,6 +285,12 @@ function table(headers: string[], tableRows: TableRow[]): string {
     }
 
     if (row.added) {
+      badge = added
+      prefix = '**'
+      suffix = '**'
+    }
+
+    if (row.bold) {
       badge = added
       prefix = '**'
       suffix = '**'
