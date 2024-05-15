@@ -169,7 +169,7 @@ function rows(
   vulns: ScanResultVuln[],
   diff?: ScanResultVulnDiff[],
 ): TableRow[] {
-  const added = '<img src="https://img.shields.io/badge/added-dc2626" />'
+  const added = '<img src="https://img.shields.io/badge/found-dc2626" />'
   const fixed = '<img src="https://img.shields.io/badge/fixed-10b981" />'
   const cves: string[] = []
   const output: TableRow[] = []
