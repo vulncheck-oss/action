@@ -34215,20 +34215,16 @@ async function comment(token, output, signature, diff, previous) {
     }
 }
 function rows(vulns, diff) {
-    const added = '<img src="https://img.shields.io/badge/found-dc2626" />';
-    const fixed = '<img src="https://img.shields.io/badge/fixed-10b981" />';
     const cves = [];
     const output = [];
     for (const vuln of vulns) {
         const difference = diff?.find(d => d.cve === vuln.cve);
         if (!cves.includes(vuln.cve)) {
             output.push({
+                added: difference?.added,
+                removed: difference?.removed,
                 cells: [
-                    {
-                        value: difference
-                            ? `${difference.added ? added : fixed} ${vuln.name}`
-                            : vuln.name,
-                    },
+                    { value: vuln.name },
                     { value: vuln.version },
                     {
                         value: vuln.cve,
@@ -34245,22 +34241,65 @@ function rows(vulns, diff) {
     return output;
 }
 function table(headers, tableRows) {
-    let output = '<table>\n';
-    output += '<tr>\n';
-    headers.map(header => {
-        output += `<th>${header}</th>\n`;
-    });
-    output += '</tr>\n';
+    const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
+    const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
+    let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
+    // Add rows
     tableRows.map(row => {
-        output += '<tr>\n';
-        row.cells.map(cell => (output += cell.link
-            ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
-            : `<td>${cell.value}</td>\n`));
-        output += '</tr>\n';
+        let badge = '';
+        let prefix = '';
+        let suffix = '';
+        if (row.removed) {
+            badge = fixed;
+            prefix = '~~';
+            suffix = '~~';
+        }
+        if (row.added) {
+            badge = added;
+            prefix = '**';
+            suffix = '**';
+        }
+        output = `${output}${row.cells
+            .map((cell, index) => {
+            let cellValue = cell.link ? `[${cell.value}](${cell.link})` : cell.value;
+            // Add badge to the first cell
+            if (index === 0) {
+                cellValue = `${badge} ${prefix}${cellValue}${suffix}`;
+            }
+            else {
+                cellValue = `${prefix}${cellValue}${suffix}`;
+            }
+            return cellValue;
+        })
+            .join(' | ')} \n`;
     });
-    output += '</table>\n';
     return output;
 }
+/*
+function table(headers: string[], tableRows: TableRow[]): string {
+  let output = '<table>\n'
+  output += '<tr>\n'
+  headers.map(header => {
+    output += `<th>${header}</th>\n`
+  })
+  output += '</tr>\n'
+
+  tableRows.map(row => {
+    output += '<tr>\n'
+    row.cells.map(
+      cell =>
+        (output += cell.link
+          ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
+          : `<td>${cell.value}</td>\n`),
+    )
+    output += '</tr>\n'
+  })
+
+  output += '</table>\n'
+
+  return output
+}
+*/
 
 
 /***/ }),

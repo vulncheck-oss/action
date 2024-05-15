@@ -31,4 +31,6 @@ export interface TableCell {
 
 export interface TableRow {
   cells: TableCell[]
+  added?: boolean
+  removed?: boolean
 }
