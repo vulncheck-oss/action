@@ -17,12 +17,23 @@ into your CI/CD pipeline.
 
 ### Scan your project for vulnerabilities
 
-Simple example:
-
 ```yaml
-- name: Scan for vulnerabilities
-  uses: vulncheck-oss/action@v1
-  with:
-    command: scan
-    token: ${{ secrets.VC_TOKEN }}
+name: Scan with VulnCheck
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions: write-all      
+
+jobs:
+  scan:
+    name: Scan with VulnCheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: vulncheck-oss/action@v1
+      with:
+        command: scan
+        token: ${{ secrets.VC_TOKEN }}
 ```
