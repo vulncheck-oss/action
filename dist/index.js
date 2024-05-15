@@ -34309,7 +34309,6 @@ function table(headers, tableRows) {
             suffix = '**';
         }
         if (row.bold) {
-            badge = added;
             prefix = '**';
             suffix = '**';
         }

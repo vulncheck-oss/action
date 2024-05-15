@@ -291,7 +291,6 @@ function table(headers: string[], tableRows: TableRow[]): string {
     }
 
     if (row.bold) {
-      badge = added
       prefix = '**'
       suffix = '**'
     }
