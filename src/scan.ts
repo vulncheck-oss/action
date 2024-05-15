@@ -14,7 +14,7 @@ import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
   core.info('Running CLI command: scan')
-  await exec('vci scan ./repos/npm-two -f')
+  await exec('vci scan ./repos/npm-one -f')
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
@@ -120,13 +120,13 @@ async function comment(
 
   if (diff) {
     const added = diff.filter(d => d.added).length
-    const removed = diff.filter(d => d.removed).length
-    if (added > 0 && removed > 0)
-      body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** new and **${removed}** removed\n\n`
-    else if (added > 0 && removed === 0)
+    const fixed = diff.filter(d => d.removed).length
+    if (added > 0 && fixed > 0)
+      body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** new and **${fixed}** fixed\n\n`
+    else if (added > 0 && fixed === 0)
       body = `${logo} VulnCheck has detected a total of ${copyTotal} with **${added}** new\n\n`
-    else if (added === 0 && removed > 0)
-      body = `${logo} VulnCheck has detected a total of ${copyTotal} with  **${removed}** removed\n\n`
+    else if (added === 0 && fixed > 0)
+      body = `${logo} VulnCheck has detected a total of ${copyTotal} with  **${fixed}** fixed\n\n`
   } else {
     body = `${logo} VulnCheck has detected a total of ${copyTotal}\n\n`
   }
@@ -170,7 +170,7 @@ function rows(
   diff?: ScanResultVulnDiff[],
 ): TableRow[] {
   const added = '<img src="https://img.shields.io/badge/new-6667ab" />'
-  const removed = '<img src="https://img.shields.io/badge/removed-dc2626" />'
+  const fixed = '<img src="https://img.shields.io/badge/fixed-dc2626" />'
   const cves: string[] = []
   const output: TableRow[] = []
   for (const vuln of vulns) {
@@ -180,7 +180,7 @@ function rows(
         cells: [
           {
             value: difference
-              ? `${difference.added ? added : removed} ${vuln.name}`
+              ? `${difference.added ? added : fixed} ${vuln.name}`
               : vuln.name,
           },
           { value: vuln.version },
