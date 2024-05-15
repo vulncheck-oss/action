@@ -180,7 +180,7 @@ function rows(
         cells: [
           {
             value: difference
-              ? `${difference.added ? added : fixed} ${vuln.name}`
+              ? `${difference.added ? added : fixed} ${vuln.name} `
               : vuln.name,
             bold: difference?.added,
             strike: difference?.removed,
