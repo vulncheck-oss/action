@@ -14,8 +14,9 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 
 export async function scan(): Promise<ScanResult> {
-  core.info('Running CLI command: scan')
-  await exec('vci scan . -f')
+  const command = `vci scan ${core.getInput('scan-path')} -f`
+  core.info(`Running CLI command: ${command}`)
+  await exec(command)
 
   const thresholds: ScanThreshold = {
     base: core.getInput('scan-cvss-base-threshold'),

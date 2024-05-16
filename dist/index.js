@@ -34104,8 +34104,9 @@ const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 async function scan() {
-    core.info('Running CLI command: scan');
-    await (0, exec_1.exec)('vci scan . -f');
+    const command = `vci scan ${core.getInput('scan-path')} -f`;
+    core.info(`Running CLI command: ${command}`);
+    await (0, exec_1.exec)(command);
     const thresholds = {
         base: core.getInput('scan-cvss-base-threshold'),
         temporal: core.getInput('scan-cvss-temporal-threshold'),
