@@ -33995,6 +33995,7 @@ async function install({ token, owner, repo, }) {
     await (0, exec_1.exec)(`tar zxvf ${asset.name}`);
     await (0, exec_1.exec)(`rm ${asset.name}`);
     await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`);
+    await (0, exec_1.exec)(`sudo chmod 755 /usr/local/bin/vci`);
     await (0, exec_1.exec)(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
     await (0, exec_1.exec)(`vci version`);
 }

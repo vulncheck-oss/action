@@ -58,6 +58,7 @@ export async function install({
   await exec(
     `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`,
   )
+  await exec(`sudo chmod 755 /usr/local/bin/vci`)
   await exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
   await exec(`vci version`)
 }
