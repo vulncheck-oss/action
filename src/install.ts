@@ -21,10 +21,21 @@ export async function install({
 }): Promise<void> {
   const octokit = github.getOctokit(token)
 
+  /* get a prerelease */
+  const { data: releases } = await octokit.rest.repos.listReleases({
+    owner,
+    repo,
+  })
+
+  const prereleases = releases.filter(release => release.prerelease)
+  const release = prereleases[0]
+
+  /* get the latest release
   const { data: release } = await octokit.rest.repos.getLatestRelease({
     owner,
     repo,
   })
+  */
 
   const asset = release.assets.find(a =>
     a.name.match(/vci_.*_linux_amd64.tar.gz/),

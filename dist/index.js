@@ -33968,10 +33968,19 @@ const fs = __importStar(__nccwpck_require__(7147));
  */
 async function install({ token, owner, repo, }) {
     const octokit = github.getOctokit(token);
-    const { data: release } = await octokit.rest.repos.getLatestRelease({
+    /* get a prerelease */
+    const { data: releases } = await octokit.rest.repos.listReleases({
         owner,
         repo,
     });
+    const prereleases = releases.filter(release => release.prerelease);
+    const release = prereleases[0];
+    /* get the latest release
+    const { data: release } = await octokit.rest.repos.getLatestRelease({
+      owner,
+      repo,
+    })
+    */
     const asset = release.assets.find(a => a.name.match(/vci_.*_linux_amd64.tar.gz/));
     if (!asset || !asset.browser_download_url) {
         throw new Error('Unable to find the asset in the release.');
