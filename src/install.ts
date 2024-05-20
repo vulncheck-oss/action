@@ -21,7 +21,7 @@ export async function install({
 }): Promise<void> {
   const octokit = github.getOctokit(token)
 
-  /* get a prerelease */
+  /* get a prerelease 
   const { data: releases } = await octokit.rest.repos.listReleases({
     owner,
     repo,
@@ -29,13 +29,13 @@ export async function install({
 
   const prereleases = releases.filter(release => release.prerelease)
   const release = prereleases[0]
+  */
 
-  /* get the latest release
+  // get the latest release
   const { data: release } = await octokit.rest.repos.getLatestRelease({
     owner,
     repo,
   })
-  */
 
   const asset = release.assets.find(a =>
     a.name.match(/vci_.*_linux_amd64.tar.gz/),
@@ -58,7 +58,6 @@ export async function install({
   await exec(
     `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`,
   )
-  await exec(`sudo chmod 755 /usr/local/bin/vci`)
   await exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
   await exec(`vci version`)
 }
