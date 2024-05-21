@@ -34113,12 +34113,6 @@ async function scan() {
     const command = `vci scan ${core.getInput('scan-path')} -f`;
     core.info(`Running CLI command: ${command}`);
     await (0, exec_1.exec)(command);
-    const thresholds = {
-        base: core.getInput('scan-cvss-base-threshold'),
-        temporal: core.getInput('scan-cvss-temporal-threshold'),
-        baseMatches: [],
-        temporalMatches: [],
-    };
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34130,15 +34124,10 @@ async function scan() {
         result.success = 'No vulnerabilities found';
         return result;
     }
-    if (thresholds.base !== '') {
-        thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
-    }
-    if (thresholds.temporal !== '') {
-        thresholds.temporalMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal));
-    }
     core.setOutput('scan-count', result.vulnerabilities.length.toString());
     core.setOutput('scan-signature', signature);
     core.setOutput('scan-output', JSON.stringify(result));
+    const thresholds = processThresholds(result);
     if (github.context.payload.pull_request &&
         result.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
@@ -34189,6 +34178,24 @@ async function scan() {
     return result;
 }
 exports.scan = scan;
+function processThresholds(result) {
+    const thresholds = {
+        base: core.getInput('scan-cvss-base-threshold'),
+        temporal: core.getInput('scan-cvss-temporal-threshold'),
+        baseMatches: [],
+        temporalMatches: [],
+        total: 0,
+    };
+    if (thresholds.base !== '') {
+        thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
+    }
+    if (thresholds.temporal !== '') {
+        thresholds.temporalMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal));
+    }
+    thresholds.total =
+        thresholds.temporalMatches.length + thresholds.baseMatches.length;
+    return thresholds;
+}
 function scanDiff(cur, prev) {
     const diff = [];
     cur.vulnerabilities.map(vuln => {
@@ -34250,10 +34257,11 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         'CVSS Temporal',
         'Fixed Versions',
     ];
-    if (diff && previous)
-        body += table(headers, rows(thresholds, [...output.vulnerabilities, ...previous.vulnerabilities], diff));
-    else
-        body += table(headers, rows(thresholds, output.vulnerabilities));
+    // TODO: have body += be called multiple times if there are thresholds set and threshold matches
+    const vulns = diff && previous
+        ? [...output.vulnerabilities, ...previous.vulnerabilities]
+        : output.vulnerabilities;
+    body += table(headers, rows(vulns));
     if (thresholds.base !== '')
         body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`;
     if (thresholds.temporal !== '')
@@ -34274,16 +34282,13 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         });
     }
 }
-function rows(thresholds, vulns, diff) {
+function rows(vulns, diff) {
     const cves = [];
     const output = [];
     for (const vuln of vulns) {
         const difference = diff?.find(d => d.cve === vuln.cve);
-        const inThreshold = thresholds.baseMatches.find(v => v.cve === vuln.cve) !== undefined ||
-            thresholds.temporalMatches.find(v => v.cve === vuln.cve) !== undefined;
         if (!cves.includes(vuln.cve)) {
             output.push({
-                underline: inThreshold,
                 added: difference?.added,
                 removed: difference?.removed,
                 cells: [
