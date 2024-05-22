@@ -13,6 +13,7 @@ export interface ScanResultVuln {
   name: string
   version: string
   cve: string
+  in_kev: boolean
   cvss_base_score: string
   cvss_temporal_score: string
   fixed_versions: string
