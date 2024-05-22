@@ -239,7 +239,10 @@ async function comment(
     )
     body += table(
       headers,
-      rows([...thresholds.baseMatches, ...thresholds.temporalMatches]),
+      rows([
+        ...thresholds.baseMatchesBelow,
+        ...thresholds.temporalMatchesBelow,
+      ]),
       'Vulnerabillites found below the threshold',
     )
   } else {
@@ -251,9 +254,9 @@ async function comment(
   }
 
   if (thresholds.base !== '')
-    body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`
+    body += `\n> CVSS base threshold set to **${thresholds.base}**`
   if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}** - matches are underlined`
+    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}**`
 
   body += `\n\n
 <br />
@@ -310,7 +313,7 @@ function table(
 ): string {
   const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)'
   const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)'
-  let output = title ? `### ${title} \n` : ''
+  let output = title ? `> ${title} \n` : ''
   output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
 
   // Add rows
