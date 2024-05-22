@@ -235,19 +235,38 @@ async function comment(
   if (thresholds.temporal !== '')
     body += `\n* CVSS temporal threshold set to **${thresholds.temporal}**\n\n`
 
-  // TODO: have body += be called multiple times if there are thresholds set and threshold matches
   if (thresholds.total > 0) {
+    let allMatches
+    let allMatchesBelow
+
+    allMatches = [...thresholds.baseMatches, ...thresholds.temporalMatches]
+    allMatchesBelow = [
+      ...thresholds.baseMatchesBelow,
+      ...thresholds.temporalMatchesBelow,
+    ]
+
+    if (diff && previous) {
+      const prevThresholds = processThresholds(previous)
+      allMatches = [
+        ...allMatches,
+        ...prevThresholds.baseMatches,
+        ...prevThresholds.temporalMatches,
+      ]
+      allMatchesBelow = [
+        ...allMatchesBelow,
+        ...prevThresholds.baseMatchesBelow,
+        ...prevThresholds.temporalMatchesBelow,
+      ]
+    }
+
     body += table(
       headers,
-      rows([...thresholds.baseMatches, ...thresholds.temporalMatches]),
+      rows(allMatches),
       'Vulnerabillites found equal to or above the threshold',
     )
     body += table(
       headers,
-      rows([
-        ...thresholds.baseMatchesBelow,
-        ...thresholds.temporalMatchesBelow,
-      ]),
+      rows(allMatchesBelow),
       'Vulnerabillites found below the threshold',
     )
   } else {
@@ -255,7 +274,7 @@ async function comment(
       diff && previous
         ? [...output.vulnerabilities, ...previous.vulnerabilities]
         : output.vulnerabilities
-    body += table(headers, rows(vulns))
+    body += table(headers, rows(vulns, diff))
   }
 
   body += `\n\n
