@@ -231,9 +231,9 @@ async function comment(
   ]
 
   if (thresholds.base !== '')
-    body += `\n> CVSS base threshold set to **${thresholds.base}**\n\n`
+    body += `\n* CVSS base threshold set to **${thresholds.base}**\n\n`
   if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}**\n\n`
+    body += `\n* CVSS temporal threshold set to **${thresholds.temporal}**\n\n`
 
   // TODO: have body += be called multiple times if there are thresholds set and threshold matches
   if (thresholds.total > 0) {
