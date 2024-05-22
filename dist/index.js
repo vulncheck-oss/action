@@ -34184,16 +34184,23 @@ function processThresholds(result) {
         temporal: core.getInput('scan-cvss-temporal-threshold'),
         baseMatches: [],
         temporalMatches: [],
+        baseMatchesBelow: [],
+        temporalMatchesBelow: [],
         total: 0,
+        totalBelow: 0,
     };
     if (thresholds.base !== '') {
         thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
+        thresholds.baseMatchesBelow = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) < parseFloat(thresholds.base));
     }
     if (thresholds.temporal !== '') {
         thresholds.temporalMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal));
+        thresholds.temporalMatchesBelow = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) < parseFloat(thresholds.temporal));
     }
     thresholds.total =
         thresholds.temporalMatches.length + thresholds.baseMatches.length;
+    thresholds.totalBelow =
+        thresholds.temporalMatchesBelow.length + thresholds.baseMatchesBelow.length;
     return thresholds;
 }
 function scanDiff(cur, prev) {
@@ -34258,10 +34265,16 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         'Fixed Versions',
     ];
     // TODO: have body += be called multiple times if there are thresholds set and threshold matches
-    const vulns = diff && previous
-        ? [...output.vulnerabilities, ...previous.vulnerabilities]
-        : output.vulnerabilities;
-    body += table(headers, rows(vulns));
+    if (thresholds.total > 0) {
+        body += table(headers, rows([...thresholds.baseMatches, ...thresholds.temporalMatches]), 'Vulnerabillites found equal to or above the threshold');
+        body += table(headers, rows([...thresholds.baseMatches, ...thresholds.temporalMatches]), 'Vulnerabillites found below the threshold');
+    }
+    else {
+        const vulns = diff && previous
+            ? [...output.vulnerabilities, ...previous.vulnerabilities]
+            : output.vulnerabilities;
+        body += table(headers, rows(vulns));
+    }
     if (thresholds.base !== '')
         body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`;
     if (thresholds.temporal !== '')
@@ -34308,10 +34321,11 @@ function rows(vulns, diff) {
     }
     return output;
 }
-function table(headers, tableRows) {
+function table(headers, tableRows, title) {
     const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
     const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
-    let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
+    let output = title ? `### ${title} \n` : '';
+    output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
     // Add rows
     tableRows.map(row => {
         let badge = '';
@@ -34347,31 +34361,6 @@ function table(headers, tableRows) {
     });
     return output;
 }
-/*
-function table(headers: string[], tableRows: TableRow[]): string {
-  let output = '<table>\n'
-  output += '<tr>\n'
-  headers.map(header => {
-    output += `<th>${header}</th>\n`
-  })
-  output += '</tr>\n'
-
-  tableRows.map(row => {
-    output += '<tr>\n'
-    row.cells.map(
-      cell =>
-        (output += cell.link
-          ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
-          : `<td>${cell.value}</td>\n`),
-    )
-    output += '</tr>\n'
-  })
-
-  output += '</table>\n'
-
-  return output
-}
-*/
 
 
 /***/ }),

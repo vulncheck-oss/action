@@ -3,7 +3,10 @@ export interface ScanThreshold {
   temporal: string
   baseMatches: ScanResultVuln[]
   temporalMatches: ScanResultVuln[]
+  baseMatchesBelow: ScanResultVuln[]
+  temporalMatchesBelow: ScanResultVuln[]
   total: number
+  totalBelow: number
 }
 
 export interface ScanResultVuln {
