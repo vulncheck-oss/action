@@ -225,6 +225,7 @@ async function comment(
     'Name',
     'Version',
     'CVE',
+    'In KEV',
     'CVSS Base',
     'CVSS Temporal',
     'Fixed Versions',
@@ -313,6 +314,9 @@ function rows(
           {
             value: vuln.cve,
             link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+          },
+          { value: vuln.in_kev ? ':white_check_mark:' : ':heavy_multiplication_x:'
+
           },
           { value: vuln.cvss_base_score },
           { value: vuln.cvss_temporal_score },
