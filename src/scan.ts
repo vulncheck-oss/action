@@ -261,12 +261,12 @@ async function comment(
 
     body += table(
       headers,
-      rows(allMatches),
+      rows(allMatches, diff),
       'Vulnerabillites found equal to or above the threshold',
     )
     body += table(
       headers,
-      rows(allMatchesBelow),
+      rows(allMatchesBelow, diff),
       'Vulnerabillites found below the threshold',
     )
   } else {

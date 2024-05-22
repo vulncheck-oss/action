@@ -34289,8 +34289,8 @@ async function comment(thresholds, token, output, signature, diff, previous) {
                 ...prevThresholds.temporalMatchesBelow,
             ];
         }
-        body += table(headers, rows(allMatches), 'Vulnerabillites found equal to or above the threshold');
-        body += table(headers, rows(allMatchesBelow), 'Vulnerabillites found below the threshold');
+        body += table(headers, rows(allMatches, diff), 'Vulnerabillites found equal to or above the threshold');
+        body += table(headers, rows(allMatchesBelow, diff), 'Vulnerabillites found below the threshold');
     }
     else {
         const vulns = diff && previous
