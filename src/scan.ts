@@ -230,6 +230,11 @@ async function comment(
     'Fixed Versions',
   ]
 
+  if (thresholds.base !== '')
+    body += `\n> CVSS base threshold set to **${thresholds.base}**\n\n`
+  if (thresholds.temporal !== '')
+    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}**\n\n`
+
   // TODO: have body += be called multiple times if there are thresholds set and threshold matches
   if (thresholds.total > 0) {
     body += table(
@@ -252,11 +257,6 @@ async function comment(
         : output.vulnerabilities
     body += table(headers, rows(vulns))
   }
-
-  if (thresholds.base !== '')
-    body += `\n> CVSS base threshold set to **${thresholds.base}**`
-  if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}**`
 
   body += `\n\n
 <br />
@@ -313,7 +313,7 @@ function table(
 ): string {
   const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)'
   const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)'
-  let output = title ? `> ${title} \n` : ''
+  let output = title ? `> ${title} \n\n` : ''
   output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
 
   // Add rows
