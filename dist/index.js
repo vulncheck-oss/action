@@ -34103,12 +34103,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.scan = void 0;
+exports.scanDiff = exports.processThresholds = exports.scan = void 0;
 const crypto_1 = __importDefault(__nccwpck_require__(6113));
 const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(3292));
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const table_1 = __nccwpck_require__(7225);
 async function scan() {
     const command = `vci scan ${core.getInput('scan-path')} -f`;
     core.info(`Running CLI command: ${command}`);
@@ -34203,6 +34204,7 @@ function processThresholds(result) {
         thresholds.temporalMatchesBelow.length + thresholds.baseMatchesBelow.length;
     return thresholds;
 }
+exports.processThresholds = processThresholds;
 function scanDiff(cur, prev) {
     const diff = [];
     cur.vulnerabilities.map(vuln => {
@@ -34215,6 +34217,7 @@ function scanDiff(cur, prev) {
     });
     return diff;
 }
+exports.scanDiff = scanDiff;
 async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
         return undefined;
@@ -34290,14 +34293,14 @@ async function comment(thresholds, token, output, signature, diff, previous) {
                 ...prevThresholds.temporalMatchesBelow,
             ];
         }
-        body += table(headers, rows(allMatches, diff), 'Vulnerabillites found equal to or above the threshold');
-        body += table(headers, rows(allMatchesBelow, diff), 'Vulnerabillites found below the threshold');
+        body += (0, table_1.table)(headers, (0, table_1.rows)(allMatches, diff), 'Vulnerabillites found equal to or above the threshold');
+        body += (0, table_1.table)(headers, (0, table_1.rows)(allMatchesBelow, diff), 'Vulnerabillites found below the threshold');
     }
     else {
         const vulns = diff && previous
             ? [...output.vulnerabilities, ...previous.vulnerabilities]
             : output.vulnerabilities;
-        body += table(headers, rows(vulns, diff));
+        body += (0, table_1.table)(headers, (0, table_1.rows)(vulns, diff));
     }
     body += `\n\n
 <br />
@@ -34315,37 +34318,17 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         });
     }
 }
-function rows(vulns, diff) {
-    const cves = [];
-    const output = [];
-    for (const vuln of vulns) {
-        const difference = diff?.find(d => d.cve === vuln.cve);
-        if (!cves.includes(vuln.cve)) {
-            output.push({
-                added: difference?.added,
-                removed: difference?.removed,
-                cells: [
-                    { value: vuln.name },
-                    { value: vuln.version },
-                    {
-                        value: vuln.cve,
-                        link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
-                    },
-                    {
-                        value: vuln.in_kev
-                            ? ':white_check_mark:'
-                            : ':heavy_multiplication_x:',
-                    },
-                    { value: vuln.cvss_base_score },
-                    { value: vuln.cvss_temporal_score },
-                    { value: vuln.fixed_versions },
-                ],
-            });
-        }
-        cves.push(vuln.cve);
-    }
-    return output;
-}
+
+
+/***/ }),
+
+/***/ 7225:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.rows = exports.table = void 0;
 function table(headers, tableRows, title) {
     const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
     const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
@@ -34386,6 +34369,39 @@ function table(headers, tableRows, title) {
     });
     return output;
 }
+exports.table = table;
+function rows(vulns, diff) {
+    const cves = [];
+    const output = [];
+    for (const vuln of vulns) {
+        const difference = diff?.find(d => d.cve === vuln.cve);
+        if (!cves.includes(vuln.cve)) {
+            output.push({
+                added: difference?.added,
+                removed: difference?.removed,
+                cells: [
+                    { value: vuln.name },
+                    { value: vuln.version },
+                    {
+                        value: vuln.cve,
+                        link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+                    },
+                    {
+                        value: vuln.in_kev
+                            ? ':white_check_mark:'
+                            : ':heavy_multiplication_x:',
+                    },
+                    { value: vuln.cvss_base_score },
+                    { value: vuln.cvss_temporal_score },
+                    { value: vuln.fixed_versions },
+                ],
+            });
+        }
+        cves.push(vuln.cve);
+    }
+    return output;
+}
+exports.rows = rows;
 
 
 /***/ }),
