@@ -1,4 +1,4 @@
-name: 'VulnCheck Actions'
+name: 'VulnCheck Action'
 description: 'Integrate VulnCheck into your GitHub Actions workflow'
 author: 'Kevin Olson <kolson@vulncheck.com>'
 branding:
