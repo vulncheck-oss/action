@@ -1,4 +1,4 @@
-import { ScanResultVuln, ScanResultVulnDiff, TableRow } from "./types"
+import type { ScanResultVuln, ScanResultVulnDiff, TableRow } from './types'
 
 export function table(
   headers: string[],
