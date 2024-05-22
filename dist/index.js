@@ -34103,7 +34103,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.scan = void 0;
+exports.scanDiff = exports.processThresholds = exports.scan = void 0;
 const crypto_1 = __importDefault(__nccwpck_require__(6113));
 const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(3292));
@@ -34204,6 +34204,7 @@ function processThresholds(result) {
         thresholds.temporalMatchesBelow.length + thresholds.baseMatchesBelow.length;
     return thresholds;
 }
+exports.processThresholds = processThresholds;
 function scanDiff(cur, prev) {
     const diff = [];
     cur.vulnerabilities.map(vuln => {
@@ -34216,6 +34217,7 @@ function scanDiff(cur, prev) {
     });
     return diff;
 }
+exports.scanDiff = scanDiff;
 async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
         return undefined;

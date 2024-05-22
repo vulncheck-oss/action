@@ -110,7 +110,7 @@ export async function scan(): Promise<ScanResult> {
   return result
 }
 
-function processThresholds(result: ScanResult): ScanThreshold {
+export function processThresholds(result: ScanResult): ScanThreshold {
   const thresholds: ScanThreshold = {
     base: core.getInput('scan-cvss-base-threshold'),
     temporal: core.getInput('scan-cvss-temporal-threshold'),
@@ -150,7 +150,10 @@ function processThresholds(result: ScanResult): ScanThreshold {
   return thresholds
 }
 
-function scanDiff(cur: ScanResult, prev: ScanResult): ScanResultVulnDiff[] {
+export function scanDiff(
+  cur: ScanResult,
+  prev: ScanResult,
+): ScanResultVulnDiff[] {
   const diff: ScanResultVulnDiff[] = []
   cur.vulnerabilities.map(vuln => {
     if (!prev.vulnerabilities.find(pv => pv.cve === vuln.cve))
