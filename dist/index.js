@@ -34113,12 +34113,6 @@ async function scan() {
     const command = `vci scan ${core.getInput('scan-path')} -f`;
     core.info(`Running CLI command: ${command}`);
     await (0, exec_1.exec)(command);
-    const thresholds = {
-        base: core.getInput('scan-cvss-base-threshold'),
-        temporal: core.getInput('scan-cvss-temporal-threshold'),
-        baseMatches: [],
-        temporalMatches: [],
-    };
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));
     const hash = crypto_1.default.createHash('sha256');
     hash.update(JSON.stringify(result));
@@ -34130,15 +34124,10 @@ async function scan() {
         result.success = 'No vulnerabilities found';
         return result;
     }
-    if (thresholds.base !== '') {
-        thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
-    }
-    if (thresholds.temporal !== '') {
-        thresholds.temporalMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal));
-    }
     core.setOutput('scan-count', result.vulnerabilities.length.toString());
     core.setOutput('scan-signature', signature);
     core.setOutput('scan-output', JSON.stringify(result));
+    const thresholds = processThresholds(result);
     if (github.context.payload.pull_request &&
         result.vulnerabilities.length > 0) {
         const token = core.getInput('github-token', { required: true });
@@ -34189,6 +34178,31 @@ async function scan() {
     return result;
 }
 exports.scan = scan;
+function processThresholds(result) {
+    const thresholds = {
+        base: core.getInput('scan-cvss-base-threshold'),
+        temporal: core.getInput('scan-cvss-temporal-threshold'),
+        baseMatches: [],
+        temporalMatches: [],
+        baseMatchesBelow: [],
+        temporalMatchesBelow: [],
+        total: 0,
+        totalBelow: 0,
+    };
+    if (thresholds.base !== '') {
+        thresholds.baseMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base));
+        thresholds.baseMatchesBelow = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_base_score) < parseFloat(thresholds.base));
+    }
+    if (thresholds.temporal !== '') {
+        thresholds.temporalMatches = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal));
+        thresholds.temporalMatchesBelow = result.vulnerabilities.filter(vuln => parseFloat(vuln.cvss_temporal_score) < parseFloat(thresholds.temporal));
+    }
+    thresholds.total =
+        thresholds.temporalMatches.length + thresholds.baseMatches.length;
+    thresholds.totalBelow =
+        thresholds.temporalMatchesBelow.length + thresholds.baseMatchesBelow.length;
+    return thresholds;
+}
 function scanDiff(cur, prev) {
     const diff = [];
     cur.vulnerabilities.map(vuln => {
@@ -34250,14 +34264,40 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         'CVSS Temporal',
         'Fixed Versions',
     ];
-    if (diff && previous)
-        body += table(headers, rows(thresholds, [...output.vulnerabilities, ...previous.vulnerabilities], diff));
-    else
-        body += table(headers, rows(thresholds, output.vulnerabilities));
     if (thresholds.base !== '')
-        body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`;
+        body += `\n* CVSS base threshold set to **${thresholds.base}**\n\n`;
     if (thresholds.temporal !== '')
-        body += `\n> CVSS temporal threshold set to **${thresholds.temporal}** - matches are underlined`;
+        body += `\n* CVSS temporal threshold set to **${thresholds.temporal}**\n\n`;
+    if (thresholds.total > 0) {
+        let allMatches;
+        let allMatchesBelow;
+        allMatches = [...thresholds.baseMatches, ...thresholds.temporalMatches];
+        allMatchesBelow = [
+            ...thresholds.baseMatchesBelow,
+            ...thresholds.temporalMatchesBelow,
+        ];
+        if (diff && previous) {
+            const prevThresholds = processThresholds(previous);
+            allMatches = [
+                ...allMatches,
+                ...prevThresholds.baseMatches,
+                ...prevThresholds.temporalMatches,
+            ];
+            allMatchesBelow = [
+                ...allMatchesBelow,
+                ...prevThresholds.baseMatchesBelow,
+                ...prevThresholds.temporalMatchesBelow,
+            ];
+        }
+        body += table(headers, rows(allMatches, diff), 'Vulnerabillites found equal to or above the threshold');
+        body += table(headers, rows(allMatchesBelow, diff), 'Vulnerabillites found below the threshold');
+    }
+    else {
+        const vulns = diff && previous
+            ? [...output.vulnerabilities, ...previous.vulnerabilities]
+            : output.vulnerabilities;
+        body += table(headers, rows(vulns, diff));
+    }
     body += `\n\n
 <br />
 <sup>Report generated by <a href="https://github.com/vulncheck-oss/action">VulnCheck</a></sup>
@@ -34274,16 +34314,13 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         });
     }
 }
-function rows(thresholds, vulns, diff) {
+function rows(vulns, diff) {
     const cves = [];
     const output = [];
     for (const vuln of vulns) {
         const difference = diff?.find(d => d.cve === vuln.cve);
-        const inThreshold = thresholds.baseMatches.find(v => v.cve === vuln.cve) !== undefined ||
-            thresholds.temporalMatches.find(v => v.cve === vuln.cve) !== undefined;
         if (!cves.includes(vuln.cve)) {
             output.push({
-                underline: inThreshold,
                 added: difference?.added,
                 removed: difference?.removed,
                 cells: [
@@ -34303,10 +34340,11 @@ function rows(thresholds, vulns, diff) {
     }
     return output;
 }
-function table(headers, tableRows) {
+function table(headers, tableRows, title) {
     const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
     const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
-    let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
+    let output = title ? `> ${title} \n\n` : '';
+    output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
     // Add rows
     tableRows.map(row => {
         let badge = '';
@@ -34342,31 +34380,6 @@ function table(headers, tableRows) {
     });
     return output;
 }
-/*
-function table(headers: string[], tableRows: TableRow[]): string {
-  let output = '<table>\n'
-  output += '<tr>\n'
-  headers.map(header => {
-    output += `<th>${header}</th>\n`
-  })
-  output += '</tr>\n'
-
-  tableRows.map(row => {
-    output += '<tr>\n'
-    row.cells.map(
-      cell =>
-        (output += cell.link
-          ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
-          : `<td>${cell.value}</td>\n`),
-    )
-    output += '</tr>\n'
-  })
-
-  output += '</table>\n'
-
-  return output
-}
-*/
 
 
 /***/ }),

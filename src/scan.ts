@@ -18,13 +18,6 @@ export async function scan(): Promise<ScanResult> {
   core.info(`Running CLI command: ${command}`)
   await exec(command)
 
-  const thresholds: ScanThreshold = {
-    base: core.getInput('scan-cvss-base-threshold'),
-    temporal: core.getInput('scan-cvss-temporal-threshold'),
-    baseMatches: [],
-    temporalMatches: [],
-  }
-
   const result: ScanResult = JSON.parse(
     await fs.readFile('output.json', 'utf8'),
   )
@@ -41,22 +34,11 @@ export async function scan(): Promise<ScanResult> {
     return result
   }
 
-  if (thresholds.base !== '') {
-    thresholds.baseMatches = result.vulnerabilities.filter(
-      vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base),
-    )
-  }
-
-  if (thresholds.temporal !== '') {
-    thresholds.temporalMatches = result.vulnerabilities.filter(
-      vuln =>
-        parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal),
-    )
-  }
-
   core.setOutput('scan-count', result.vulnerabilities.length.toString())
   core.setOutput('scan-signature', signature)
   core.setOutput('scan-output', JSON.stringify(result))
+
+  const thresholds = processThresholds(result)
 
   if (
     github.context.payload.pull_request &&
@@ -69,6 +51,7 @@ export async function scan(): Promise<ScanResult> {
       core.info('No scan result found yet, commenting')
       comment(thresholds, token, result, signature)
     }
+
     if (lastComment && lastComment.signature !== signature) {
       core.info('Different scan result found, commenting the change')
 
@@ -125,6 +108,46 @@ export async function scan(): Promise<ScanResult> {
   }
 
   return result
+}
+
+function processThresholds(result: ScanResult): ScanThreshold {
+  const thresholds: ScanThreshold = {
+    base: core.getInput('scan-cvss-base-threshold'),
+    temporal: core.getInput('scan-cvss-temporal-threshold'),
+    baseMatches: [],
+    temporalMatches: [],
+    baseMatchesBelow: [],
+    temporalMatchesBelow: [],
+    total: 0,
+    totalBelow: 0,
+  }
+
+  if (thresholds.base !== '') {
+    thresholds.baseMatches = result.vulnerabilities.filter(
+      vuln => parseFloat(vuln.cvss_base_score) >= parseFloat(thresholds.base),
+    )
+    thresholds.baseMatchesBelow = result.vulnerabilities.filter(
+      vuln => parseFloat(vuln.cvss_base_score) < parseFloat(thresholds.base),
+    )
+  }
+
+  if (thresholds.temporal !== '') {
+    thresholds.temporalMatches = result.vulnerabilities.filter(
+      vuln =>
+        parseFloat(vuln.cvss_temporal_score) >= parseFloat(thresholds.temporal),
+    )
+    thresholds.temporalMatchesBelow = result.vulnerabilities.filter(
+      vuln =>
+        parseFloat(vuln.cvss_temporal_score) < parseFloat(thresholds.temporal),
+    )
+  }
+
+  thresholds.total =
+    thresholds.temporalMatches.length + thresholds.baseMatches.length
+  thresholds.totalBelow =
+    thresholds.temporalMatchesBelow.length + thresholds.baseMatchesBelow.length
+
+  return thresholds
 }
 
 function scanDiff(cur: ScanResult, prev: ScanResult): ScanResultVulnDiff[] {
@@ -207,21 +230,52 @@ async function comment(
     'Fixed Versions',
   ]
 
-  if (diff && previous)
+  if (thresholds.base !== '')
+    body += `\n* CVSS base threshold set to **${thresholds.base}**\n\n`
+  if (thresholds.temporal !== '')
+    body += `\n* CVSS temporal threshold set to **${thresholds.temporal}**\n\n`
+
+  if (thresholds.total > 0) {
+    let allMatches
+    let allMatchesBelow
+
+    allMatches = [...thresholds.baseMatches, ...thresholds.temporalMatches]
+    allMatchesBelow = [
+      ...thresholds.baseMatchesBelow,
+      ...thresholds.temporalMatchesBelow,
+    ]
+
+    if (diff && previous) {
+      const prevThresholds = processThresholds(previous)
+      allMatches = [
+        ...allMatches,
+        ...prevThresholds.baseMatches,
+        ...prevThresholds.temporalMatches,
+      ]
+      allMatchesBelow = [
+        ...allMatchesBelow,
+        ...prevThresholds.baseMatchesBelow,
+        ...prevThresholds.temporalMatchesBelow,
+      ]
+    }
+
     body += table(
       headers,
-      rows(
-        thresholds,
-        [...output.vulnerabilities, ...previous.vulnerabilities],
-        diff,
-      ),
+      rows(allMatches, diff),
+      'Vulnerabillites found equal to or above the threshold',
     )
-  else body += table(headers, rows(thresholds, output.vulnerabilities))
-
-  if (thresholds.base !== '')
-    body += `\n> CVSS base threshold set to **${thresholds.base}** - matches are underlined`
-  if (thresholds.temporal !== '')
-    body += `\n> CVSS temporal threshold set to **${thresholds.temporal}** - matches are underlined`
+    body += table(
+      headers,
+      rows(allMatchesBelow, diff),
+      'Vulnerabillites found below the threshold',
+    )
+  } else {
+    const vulns =
+      diff && previous
+        ? [...output.vulnerabilities, ...previous.vulnerabilities]
+        : output.vulnerabilities
+    body += table(headers, rows(vulns, diff))
+  }
 
   body += `\n\n
 <br />
@@ -242,7 +296,6 @@ async function comment(
 }
 
 function rows(
-  thresholds: ScanThreshold,
   vulns: ScanResultVuln[],
   diff?: ScanResultVulnDiff[],
 ): TableRow[] {
@@ -250,12 +303,8 @@ function rows(
   const output: TableRow[] = []
   for (const vuln of vulns) {
     const difference = diff?.find(d => d.cve === vuln.cve)
-    const inThreshold: boolean =
-      thresholds.baseMatches.find(v => v.cve === vuln.cve) !== undefined ||
-      thresholds.temporalMatches.find(v => v.cve === vuln.cve) !== undefined
     if (!cves.includes(vuln.cve)) {
       output.push({
-        underline: inThreshold,
         added: difference?.added,
         removed: difference?.removed,
         cells: [
@@ -276,10 +325,15 @@ function rows(
   return output
 }
 
-function table(headers: string[], tableRows: TableRow[]): string {
+function table(
+  headers: string[],
+  tableRows: TableRow[],
+  title?: string,
+): string {
   const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)'
   const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)'
-  let output = `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
+  let output = title ? `> ${title} \n\n` : ''
+  output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
 
   // Add rows
   tableRows.map(row => {
@@ -320,29 +374,3 @@ function table(headers: string[], tableRows: TableRow[]): string {
 
   return output
 }
-
-/*
-function table(headers: string[], tableRows: TableRow[]): string {
-  let output = '<table>\n'
-  output += '<tr>\n'
-  headers.map(header => {
-    output += `<th>${header}</th>\n`
-  })
-  output += '</tr>\n'
-
-  tableRows.map(row => {
-    output += '<tr>\n'
-    row.cells.map(
-      cell =>
-        (output += cell.link
-          ? `<td><a href="${cell.link}">${cell.value}</a></</td>`
-          : `<td>${cell.value}</td>\n`),
-    )
-    output += '</tr>\n'
-  })
-
-  output += '</table>\n'
-
-  return output
-}
-*/
