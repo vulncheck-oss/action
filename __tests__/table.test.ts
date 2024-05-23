@@ -3,7 +3,7 @@ import type { ScanResultVuln, ScanResultVulnDiff, TableRow } from '../src/types'
 
 describe('table.ts tests', () => {
   test('table function should generate a markdown table', () => {
-    const headers = ['Header1', 'Header2']
+    const headers = ['Header1', 'Header2'].map(value => ({ value }))
     const tableRows: TableRow[] = [
       {
         added: false,
@@ -16,7 +16,7 @@ describe('table.ts tests', () => {
     const result = table(headers, tableRows, title)
 
     expect(result).toContain(title)
-    expect(result).toContain(headers.join(' | '))
+    expect(result).toContain(headers.map(header => header.value).join('  |  '))
     expect(result).toContain(
       tableRows[0].cells.map(cell => cell.value).join(' | '),
     )
