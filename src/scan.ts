@@ -225,13 +225,13 @@ async function comment(
   }
 
   const headers = [
-    'Name',
-    'Version',
-    'CVE',
-    'In KEV',
-    'CVSS Base',
-    'CVSS Temporal',
-    'Fixed Versions',
+    { value: 'Name' },
+    { value: 'Version' },
+    { value: 'CVE' },
+    { value: 'In KEV', link: 'https://vulncheck.com/kev' },
+    { value: 'CVSS Base' },
+    { value: 'CVSS Temporal' },
+    { value: 'Fixed Versions' },
   ]
 
   if (thresholds.base !== '')

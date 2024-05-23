@@ -1,14 +1,19 @@
-import type { ScanResultVuln, ScanResultVulnDiff, TableRow } from './types'
+import type {
+  ScanResultVuln,
+  ScanResultVulnDiff,
+  TableRow,
+  TableHeader,
+} from './types'
 
 export function table(
-  headers: string[],
+  headers: TableHeader[],
   tableRows: TableRow[],
   title?: string,
 ): string {
   const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)'
   const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)'
   let output = title ? `> ${title} \n\n` : ''
-  output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
+  output += `${headers.map(header => (header.link ? ` [${header.value}](${header.link}) ` : ` ${header.value} `)).join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`
 
   // Add rows
   tableRows.map(row => {

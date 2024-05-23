@@ -41,6 +41,11 @@ export interface TableCell {
   link?: string
 }
 
+export interface TableHeader {
+  value: string
+  link?: string
+}
+
 export interface TableRow {
   cells: TableCell[]
   bold?: boolean
