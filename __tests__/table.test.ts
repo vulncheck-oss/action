@@ -16,7 +16,7 @@ describe('table.ts tests', () => {
     const result = table(headers, tableRows, title)
 
     expect(result).toContain(title)
-    expect(result).toContain(headers.join(' | '))
+    expect(result).toContain(headers.map(header => header.value).join('  |  '))
     expect(result).toContain(
       tableRows[0].cells.map(cell => cell.value).join(' | '),
     )
