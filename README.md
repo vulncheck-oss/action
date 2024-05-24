@@ -1,7 +1,9 @@
 
 ## The VulnCheck Action
 > Bring VulnCheck into your CI/CD pipeline.
-<img src="/logo-action.png" align="right" alt="VulnCheck Logo" width="150" />
+<p align="center">
+  <img src="/logo-action.png" alt="VulnCheck Logo" width="150" />
+</p>
 
 
 <p align="center">
