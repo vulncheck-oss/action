@@ -34260,13 +34260,13 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         body = `${logo} VulnCheck has detected a total of ${copyTotal}\n\n`;
     }
     const headers = [
-        'Name',
-        'Version',
-        'CVE',
-        'In KEV',
-        'CVSS Base',
-        'CVSS Temporal',
-        'Fixed Versions',
+        { value: 'Name' },
+        { value: 'Version' },
+        { value: 'CVE' },
+        { value: 'In KEV', link: 'https://vulncheck.com/kev' },
+        { value: 'CVSS Base' },
+        { value: 'CVSS Temporal' },
+        { value: 'Fixed Versions' },
     ];
     if (thresholds.base !== '')
         body += `\n* CVSS base threshold set to **${thresholds.base}**\n\n`;
@@ -34333,7 +34333,7 @@ function table(headers, tableRows, title) {
     const added = '[![Found](https://img.shields.io/badge/found-dc2626)](#)';
     const fixed = '[![Fixed](https://img.shields.io/badge/fixed-10b981)](#)';
     let output = title ? `> ${title} \n\n` : '';
-    output += `${headers.join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
+    output += `${headers.map(header => (header.link ? ` [${header.value}](${header.link}) ` : ` ${header.value} `)).join(' | ')}  \n ${headers.map(() => '---').join(' | ')} \n`;
     // Add rows
     tableRows.map(row => {
         let badge = '';

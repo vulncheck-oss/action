@@ -3,13 +3,12 @@
 </p>
 
 ## The VulnCheck Action
-> Bring VulnCheck into your CI/CD pipeline.
 
+> Bring VulnCheck into your CI/CD pipeline.
 
 <p align="center">
   <img src="/demo-pr-comment.png" />
 </p>
-
 
 This Github Action uses the VulnCheck
 [CLI](https://github.com/vulncheck-oss/cli) to integrate security-related tasks
@@ -19,9 +18,12 @@ into your CI/CD pipeline.
 [![Check dist/](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-## Usage
+## 🤸 Usage
 
-### Scan your project for vulnerabilities
+### 🔏 Scan your project for vulnerabilities
+
+This example will scan for vulnerabilities and report them as a comment on a
+pull request
 
 ```yaml
 name: Scan with VulnCheck
