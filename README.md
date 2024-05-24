@@ -69,3 +69,11 @@ The following are optional parameters that can be used with the `scan` command
 > Specifying either a base or temporal threshold will change the pull request
 > comments to split the vulnerabilities into two sections, the first will be
 > results found above the threshold and the second will be results found below.
+
+### 🔓 Permissions
+ This action requires the `write-all` permission in order to comment pull requests.
+
+```yaml
+permissions: write-all
+```
+
