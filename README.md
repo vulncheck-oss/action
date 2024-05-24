@@ -20,7 +20,7 @@ into your CI/CD pipeline.
 
 ## 🤸 Usage
 
-### 🔏 Scan your project for vulnerabilities
+### 🔏 Scan for vulnerabilities
 
 This example will scan for vulnerabilities and report them as a comment on a
 pull request
@@ -45,3 +45,20 @@ jobs:
           command: scan
           token: ${{ secrets.VC_TOKEN }}
 ```
+
+### 💅 Customizing
+
+The only required parameter for any command is the `token` parameter. This is your VulnCheck API token that can be created in hte portal. 
+
+> [!Important] 
+> 
+> It is recommended to store this token as a secret in your repository.
+
+The following are optional parameters that can be used with the `scan` command
+
+| Name | Description | Default |
+| ---- | ----------- | ------- |
+| `scan-path` | Path to the directory to scan | `./` |
+| `scan-cvss-base-threshold` | CVSS base score threshold | `0` |
+| scan-cvss-temporal-threshold` | CVSS temporal score threshold | `0` |
+
