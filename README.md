@@ -52,7 +52,7 @@ The only required parameter for any command is the `token` parameter. This is yo
 
 > [!Important] 
 > 
-> It is recommended to store this token as a secret in your repository.
+> We recommend you store this token as a secret in either repository or organization.
 
 The following are optional parameters that can be used with the `scan` command
 
@@ -60,5 +60,9 @@ The following are optional parameters that can be used with the `scan` command
 | ---- | ----------- | ------- |
 | `scan-path` | Path to the directory to scan | `./` |
 | `scan-cvss-base-threshold` | CVSS base score threshold | `0` |
-| scan-cvss-temporal-threshold` | CVSS temporal score threshold | `0` |
+| `scan-cvss-temporal-threshold` | CVSS temporal score threshold | `0` |
 
+
+> [!Note]
+> 
+> Specifying either a base or temporal threshold will change the pull request comments to split the vulnerabilities into two sections, the first will be results found above the threshold and the second will be results found below.
