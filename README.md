@@ -1,5 +1,7 @@
+<img src="/logo-action.png" align="right" alt="VulnCheck Logo" width="150" />
+
 <p align="center">
-    <img src="/logo-action.png" align="center" alt="VulnCheck Logo" width="150" />
+  <img src="/demo-pr-comment" />
 </p>
 
 # The VulnCheck Action
