@@ -71,9 +71,10 @@ The following are optional parameters that can be used with the `scan` command
 > results found above the threshold and the second will be results found below.
 
 ### 🔓 Permissions
- This action requires the `write-all` permission in order to comment pull requests.
+
+This action requires the `write-all` permission in order to comment pull
+requests.
 
 ```yaml
 permissions: write-all
 ```
-
