@@ -1,10 +1,13 @@
-<p align="center">
-    <img src="/logo-action.png" align="center" alt="VulnCheck Logo" width="150" />
-</p>
+<img src="/logo-action.png" align="right" alt="VulnCheck Logo" width="150" />
 
 # The VulnCheck Action
 
 > Bring VulnCheck into your CI/CD pipeline.
+
+
+<p align="center">
+  <img src="/demo-pr-comment" />
+</p>
 
 This Github Action uses the VulnCheck
 [CLI](https://github.com/vulncheck-oss/cli) to integrate security-related tasks
