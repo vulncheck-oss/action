@@ -1,4 +1,3 @@
-<img src="/logo-action.png" align="right" alt="VulnCheck Logo" width="150" />
 
 
 # The VulnCheck Action
@@ -8,6 +7,7 @@
 <p align="center">
   <img src="/demo-pr-comment.png" />
 </p>
+<img src="/logo-action.png" align="right" alt="VulnCheck Logo" width="150" />
 
 This Github Action uses the VulnCheck
 [CLI](https://github.com/vulncheck-oss/cli) to integrate security-related tasks
