@@ -63,6 +63,7 @@ The following are optional parameters that can be used with the `scan` command
 | `scan-path`                    | Path to the directory to scan | `./`    |
 | `scan-cvss-base-threshold`     | CVSS base score threshold     | `0`     |
 | `scan-cvss-temporal-threshold` | CVSS temporal score threshold | `0`     |
+| `scan-cve-details` | Include an annotation for every found CVE showing package type, cataloger, and locations | `false` |
 
 > [!Note]
 >
