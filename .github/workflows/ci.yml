@@ -56,8 +56,6 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
-          scan-path: ./repo
-          scan-cve-details: true
 
       - name: Retrieve Output
         id: output
