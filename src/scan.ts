@@ -84,8 +84,9 @@ export async function scan(): Promise<ScanResult> {
       result.vulnerabilities.map(vuln => {
         if (vuln.purl_detail === undefined) return
         // CVE ID was found in the type package name in location,location using cataloger
-        core.notice(`
-          ${vuln.cve} found in ${vuln.purl_detail.type} package ${vuln.name} in ${vuln.purl_detail.locations.join(', ')} using ${vuln.purl_detail.cataloger}`)
+        core.notice(
+          `${vuln.cve} found in ${vuln.purl_detail.type} package ${vuln.name} in ${vuln.purl_detail.locations.join(', ')} using ${vuln.purl_detail.cataloger}`,
+        )
       })
     }
 
