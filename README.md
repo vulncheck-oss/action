@@ -58,19 +58,18 @@ your VulnCheck API token that can be created in hte portal.
 
 The following are optional parameters that can be used with the `scan` command
 
-| Name                           | Description                   | Default |
-| ------------------------------ | ----------------------------- | ------- |
-| `scan-path`                    | Path to the directory to scan | `./`    |
-| `scan-cvss-base-threshold`     | CVSS base score threshold     | `0`     |
-| `scan-cvss-temporal-threshold` | CVSS temporal score threshold | `0`     |
-| `scan-cve-details` | Include an annotation for every found CVE showing package type, cataloger, and locations | `false` |
+| Name                           | Description                                                                              | Default |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | ------- |
+| `scan-path`                    | Path to the directory to scan                                                            | `./`    |
+| `scan-cvss-base-threshold`     | CVSS base score threshold                                                                | `0`     |
+| `scan-cvss-temporal-threshold` | CVSS temporal score threshold                                                            | `0`     |
+| `scan-cve-details`             | Include an annotation for every found CVE showing package type, cataloger, and locations | `false` |
 
 > [!Note]
 >
 > Specifying either a base or temporal threshold will change the pull request
 > comments to split the vulnerabilities into two sections, the first will be
 > results found above the threshold and the second will be results found below.
-
 
 Below is an example output of annotations if `scan-cve-details` is se to true:
 
