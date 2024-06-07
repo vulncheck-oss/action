@@ -17,7 +17,7 @@ export interface ScanResultVuln {
   cvss_base_score: string
   cvss_temporal_score: string
   fixed_versions: string
-  purl_detail: PurlDetail
+  purl_detail?: PurlDetail
 }
 
 export interface PurlDetail {

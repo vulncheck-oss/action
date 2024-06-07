@@ -27,8 +27,10 @@ inputs:
     description: 'CVSS Temporal Threshold to fail the workflow'
     required: false
   scan-cve-details:
-    description: 'Include an annotation for every found CVE showing package type, cataloger, and locations'
-    required: false  
+    description:
+      'Include an annotation for every found CVE showing package type,
+      cataloger, and locations'
+    required: false
 outputs:
   scan-output:
     description: 'Output results if a scan is run'
