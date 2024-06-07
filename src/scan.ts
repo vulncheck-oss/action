@@ -79,6 +79,16 @@ export async function scan(): Promise<ScanResult> {
       copy += ` | ${thresholds.temporalMatches.length} found above or equal to the CVSS temporal score threshold of ${thresholds.temporal}`
     }
 
+    console.log('scan-cve-details:', core.getInput('scan-cve-details'))
+    if (core.getInput('scan-cve-details')) {
+      result.vulnerabilities.map(vuln => {
+        // CVE ID was found in the type package name in location,location using cataloger
+        core.notice(`
+          ${vuln.cve} found in ${vuln.purl_detail.type} package ${vuln.name} in ${vuln.purl_detail.locations.join(', ')} using ${vuln.purl_detail.cataloger}`)
+      })
+
+    }
+
     // if we have matches, we have thresholds, fail
     if (
       thresholds.baseMatches.length > 0 ||
