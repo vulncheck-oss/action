@@ -34168,6 +34168,7 @@ async function scan() {
                     },
                 },
                 ignoreReturnCode: true,
+                silent: true,
             };
             result.vulnerabilities.map(async (vuln) => await (0, exec_1.exec)(`npm ls ${vuln.name}@${vuln.version}`, [], options));
         }

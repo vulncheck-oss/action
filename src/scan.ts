@@ -96,6 +96,7 @@ export async function scan(): Promise<ScanResult> {
           },
         },
         ignoreReturnCode: true,
+        silent: true,
       }
       result.vulnerabilities.map(
         async vuln =>
