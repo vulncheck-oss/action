@@ -34160,6 +34160,17 @@ async function scan() {
                 core.notice(`${vuln.cve} found in ${vuln.purl_detail.type} package ${vuln.name} in ${vuln.purl_detail.locations.join(', ')} using ${vuln.purl_detail.cataloger}`);
             });
         }
+        if (core.getInput('scan-cve-npm-rel')) {
+            const options = {
+                listeners: {
+                    stdout: (data) => {
+                        core.notice(data.toString());
+                    },
+                },
+                ignoreReturnCode: true,
+            };
+            result.vulnerabilities.map(async (vuln) => await (0, exec_1.exec)(`npm ls ${vuln.name}@${vuln.version}`, [], options));
+        }
         // if we have matches, we have thresholds, fail
         if (thresholds.baseMatches.length > 0 ||
             thresholds.temporalMatches.length > 0) {
