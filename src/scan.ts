@@ -88,6 +88,22 @@ export async function scan(): Promise<ScanResult> {
       })
     }
 
+    if (core.getInput('scan-cve-npm-rel')) {
+      const options = {
+        listeners: {
+          stdout: (data: Buffer) => {
+            core.notice(data.toString())
+          },
+        },
+        ignoreReturnCode: true,
+        silent: true,
+      }
+      result.vulnerabilities.map(
+        async vuln =>
+          await exec(`npm ls ${vuln.name}@${vuln.version}`, [], options),
+      )
+    }
+
     // if we have matches, we have thresholds, fail
     if (
       thresholds.baseMatches.length > 0 ||

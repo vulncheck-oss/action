@@ -31,6 +31,9 @@ inputs:
       'Include an annotation for every found CVE showing package type,
       cataloger, and locations'
     required: false
+  scan-cve-npm-rel:
+    description: 'Attempt to use npm to trace CVE package to its owner'
+    required: false
 outputs:
   scan-output:
     description: 'Output results if a scan is run'
