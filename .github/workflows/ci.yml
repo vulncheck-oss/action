@@ -56,7 +56,6 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
-          scan-path: ./npm-two
 
       - name: Retrieve Output
         id: output
