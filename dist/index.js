@@ -34123,13 +34123,13 @@ async function scan() {
         core.setOutput('scan-signature', signature);
         core.setOutput('scan-output', JSON.stringify(result));
         result.success = 'No vulnerabilities found';
+        result.vulnerabilities = [];
     }
     core.setOutput('scan-count', result.vulnerabilities.length.toString());
     core.setOutput('scan-signature', signature);
     core.setOutput('scan-output', JSON.stringify(result));
     const thresholds = processThresholds(result);
-    if (github.context.payload.pull_request &&
-        result.vulnerabilities.length > 0) {
+    if (github.context.payload.pull_request && result.vulnerabilities.length) {
         const token = core.getInput('github-token', { required: true });
         const lastComment = await getLastComment(token);
         if (!lastComment) {
