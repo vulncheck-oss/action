@@ -59,5 +59,5 @@ export async function install({
     `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vulncheck /usr/local/bin/vulncheck`,
   )
   await exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
-  await exec(`vci version`)
+  await exec(`vulncheck version`)
 }

@@ -33997,7 +33997,7 @@ async function install({ token, owner, repo, }) {
     await (0, exec_1.exec)(`rm ${asset.name}`);
     await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vulncheck /usr/local/bin/vulncheck`);
     await (0, exec_1.exec)(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
-    await (0, exec_1.exec)(`vci version`);
+    await (0, exec_1.exec)(`vulncheck version`);
 }
 exports.install = install;
 
@@ -34115,7 +34115,7 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const table_1 = __nccwpck_require__(7225);
 async function scan() {
-    const command = `vci scan ${core.getInput('scan-path')} -f`;
+    const command = `vulncheck scan ${core.getInput('scan-path')} -f`;
     core.info(`Running CLI command: ${command}`);
     await (0, exec_1.exec)(command);
     const result = JSON.parse(await fs.readFile('output.json', 'utf8'));

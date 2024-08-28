@@ -14,7 +14,7 @@ import * as github from '@actions/github'
 import { table, rows } from './table'
 
 export async function scan(): Promise<ScanResult> {
-  const command = `vci scan ${core.getInput('scan-path')} -f`
+  const command = `vulncheck scan ${core.getInput('scan-path')} -f`
   core.info(`Running CLI command: ${command}`)
   await exec(command)
 
