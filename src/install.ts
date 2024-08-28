@@ -38,7 +38,7 @@ export async function install({
   })
 
   const asset = release.assets.find(a =>
-    a.name.match(/vci_.*_linux_amd64.tar.gz/),
+    a.name.match(/vulncheck_.*_linux_amd64.tar.gz/),
   )
 
   if (!asset || !asset.browser_download_url) {
@@ -56,8 +56,8 @@ export async function install({
   await exec(`tar zxvf ${asset.name}`)
   await exec(`rm ${asset.name}`)
   await exec(
-    `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`,
+    `sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vulncheck /usr/local/bin/vulncheck`,
   )
   await exec(`rm -rf  ${asset.name.replace('.tar.gz', '')}`)
-  await exec(`vci version`)
+  await exec(`vulncheck version`)
 }
