@@ -53,7 +53,7 @@ jobs:
 
       - name: Test Local Action
         id: test-action
-        uses: ./
+        uses: ./npm-two
         with:
           token: ${{ secrets.VC_TOKEN }}
 
