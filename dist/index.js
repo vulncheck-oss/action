@@ -34129,7 +34129,7 @@ async function scan() {
     core.setOutput('scan-signature', signature);
     core.setOutput('scan-output', JSON.stringify(result));
     const thresholds = processThresholds(result);
-    if (github.context.payload.pull_request && result.vulnerabilities.length) {
+    if (github.context.payload.pull_request) {
         const token = core.getInput('github-token', { required: true });
         const lastComment = await getLastComment(token);
         if (!lastComment) {

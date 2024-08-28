@@ -40,7 +40,7 @@ export async function scan(): Promise<ScanResult> {
 
   const thresholds = processThresholds(result)
 
-  if (github.context.payload.pull_request && result.vulnerabilities.length) {
+  if (github.context.payload.pull_request) {
     const token = core.getInput('github-token', { required: true })
     const lastComment = await getLastComment(token)
 
