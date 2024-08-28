@@ -53,9 +53,11 @@ jobs:
 
       - name: Test Local Action
         id: test-action
-        uses: ./npm-two
+        uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
+          scan-path: ./npm-two
+
 
       - name: Retrieve Output
         id: output
