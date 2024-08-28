@@ -31,7 +31,6 @@ export async function scan(): Promise<ScanResult> {
     core.setOutput('scan-signature', signature)
     core.setOutput('scan-output', JSON.stringify(result))
     result.success = 'No vulnerabilities found'
-    return result
   }
 
   core.setOutput('scan-count', result.vulnerabilities.length.toString())

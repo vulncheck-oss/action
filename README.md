@@ -40,7 +40,7 @@ jobs:
     name: Scan with VulnCheck
     runs-on: ubuntu-latest
     steps:
-      - uses: vulncheck-oss/action@v1.1.0
+      - uses: vulncheck-oss/action@v1
         with:
           command: scan
           token: ${{ secrets.VC_TOKEN }}
