@@ -33991,7 +33991,7 @@ async function install({ token, owner, repo, }) {
     fs.writeFileSync(asset.name, response.data);
     await (0, exec_1.exec)(`tar zxvf ${asset.name}`);
     await (0, exec_1.exec)(`rm ${asset.name}`);
-    await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vci /usr/local/bin/vci`);
+    await (0, exec_1.exec)(`sudo mv ${asset.name.replace('.tar.gz', '')}/bin/vulncheck /usr/local/bin/vulncheck`);
     await (0, exec_1.exec)(`rm -rf  ${asset.name.replace('.tar.gz', '')}`);
     await (0, exec_1.exec)(`vci version`);
 }
