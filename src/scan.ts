@@ -31,7 +31,7 @@ export async function scan(): Promise<ScanResult> {
     core.setOutput('scan-signature', signature)
     core.setOutput('scan-output', JSON.stringify(result))
     result.success = 'No vulnerabilities found'
-    return result
+    result.vulnerabilities = []
   }
 
   core.setOutput('scan-count', result.vulnerabilities.length.toString())
@@ -40,10 +40,7 @@ export async function scan(): Promise<ScanResult> {
 
   const thresholds = processThresholds(result)
 
-  if (
-    github.context.payload.pull_request &&
-    result.vulnerabilities.length > 0
-  ) {
+  if (github.context.payload.pull_request) {
     const token = core.getInput('github-token', { required: true })
     const lastComment = await getLastComment(token)
 
@@ -303,7 +300,7 @@ async function comment(
       diff && previous
         ? [...output.vulnerabilities, ...previous.vulnerabilities]
         : output.vulnerabilities
-    body += table(headers, rows(vulns, diff))
+    if (vulns.length > 0) body += table(headers, rows(vulns, diff))
   }
 
   body += `\n\n
