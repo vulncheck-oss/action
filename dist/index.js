@@ -34318,7 +34318,8 @@ async function comment(thresholds, token, output, signature, diff, previous) {
         const vulns = diff && previous
             ? [...output.vulnerabilities, ...previous.vulnerabilities]
             : output.vulnerabilities;
-        body += (0, table_1.table)(headers, (0, table_1.rows)(vulns, diff));
+        if (vulns.length > 0)
+            body += (0, table_1.table)(headers, (0, table_1.rows)(vulns, diff));
     }
     body += `\n\n
 <br />

@@ -300,7 +300,7 @@ async function comment(
       diff && previous
         ? [...output.vulnerabilities, ...previous.vulnerabilities]
         : output.vulnerabilities
-    body += table(headers, rows(vulns, diff))
+    if (vulns.length > 0) body += table(headers, rows(vulns, diff))
   }
 
   body += `\n\n
