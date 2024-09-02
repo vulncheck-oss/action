@@ -71,7 +71,7 @@
     "@actions/github": "^6.0.0",
     "@octokit/action": "^7.0.0",
     "@octokit/types": "^13.5.0",
-    "axios": "^1.6.8"
+    "axios": "^1.7.7"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
