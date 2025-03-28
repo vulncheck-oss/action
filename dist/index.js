@@ -34403,7 +34403,7 @@ function rows(vulns, diff) {
                     { value: vuln.version },
                     {
                         value: vuln.cve,
-                        link: `https://vulncheck.com/browse/cve/${vuln.cve}`,
+                        link: `https://vulncheck.com/cve/${vuln.cve}`,
                     },
                     {
                         value: vuln.in_kev

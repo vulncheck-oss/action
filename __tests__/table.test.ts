@@ -49,7 +49,7 @@ describe('table.ts tests', () => {
     expect(result[0].removed).toBe(false)
     expect(result[0].cells[0].value).toBe(vulns[0].name)
     expect(result[0].cells[2].link).toBe(
-      `https://vulncheck.com/browse/cve/${vulns[0].cve}`,
+      `https://vulncheck.com/cve/${vulns[0].cve}`,
     )
   })
 })
