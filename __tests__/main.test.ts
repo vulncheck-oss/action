@@ -34,12 +34,10 @@ describe('action', () => {
       }
     })
 
-    jest
-      .spyOn(scanModule, 'scan')
-      .mockResolvedValue({
-        vulnerabilities: [],
-        success: 'No vulnerabilities found',
-      })
+    jest.spyOn(scanModule, 'scan').mockResolvedValue({
+      vulnerabilities: [],
+      success: 'No vulnerabilities found',
+    })
 
     await main.run()
 
@@ -61,12 +59,10 @@ describe('action', () => {
       }
     })
 
-    jest
-      .spyOn(scanModule, 'scan')
-      .mockResolvedValue({
-        vulnerabilities: [],
-        failed: 'Found 1 vulnerability',
-      })
+    jest.spyOn(scanModule, 'scan').mockResolvedValue({
+      vulnerabilities: [],
+      failed: 'Found 1 vulnerability',
+    })
 
     await main.run()
 
