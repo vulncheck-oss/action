@@ -24,11 +24,15 @@ describe('install', () => {
     const mockGetLatestRelease = jest.fn().mockResolvedValue({
       data: { assets: [mockAsset] },
     })
-    ;(github.getOctokit as jest.Mock).mockReturnValue({
+    jest.mocked(github.getOctokit).mockReturnValue({
       rest: { repos: { getLatestRelease: mockGetLatestRelease } },
-    })
-    ;(axios.get as jest.Mock).mockResolvedValue({ data: Buffer.from('binary') })
-    ;(fs.writeFileSync as jest.Mock).mockImplementation(() => {})
+    } as never)
+    const getMock = jest
+      .spyOn(axios, 'get')
+      .mockResolvedValue({ data: Buffer.from('binary') })
+    const writeFileSyncMock = jest
+      .spyOn(fs, 'writeFileSync')
+      .mockImplementation(() => {})
 
     await install({ token: 'test-token', owner: 'vulncheck-oss', repo: 'cli' })
 
@@ -36,15 +40,15 @@ describe('install', () => {
       owner: 'vulncheck-oss',
       repo: 'cli',
     })
-    expect(axios.get).toHaveBeenCalledWith(mockAsset.url, expect.any(Object))
-    expect(fs.writeFileSync).toHaveBeenCalledWith(
+    expect(getMock).toHaveBeenCalledWith(mockAsset.url, expect.any(Object))
+    expect(writeFileSyncMock).toHaveBeenCalledWith(
       mockAsset.name,
       expect.anything(),
     )
   })
 
   it('should throw when no matching linux_amd64 asset is found', async () => {
-    ;(github.getOctokit as jest.Mock).mockReturnValue({
+    jest.mocked(github.getOctokit).mockReturnValue({
       rest: {
         repos: {
           getLatestRelease: jest.fn().mockResolvedValue({
@@ -60,7 +64,7 @@ describe('install', () => {
           }),
         },
       },
-    })
+    } as never)
 
     await expect(
       install({ token: 'test-token', owner: 'vulncheck-oss', repo: 'cli' }),
@@ -68,7 +72,7 @@ describe('install', () => {
   })
 
   it('should throw when assets list is empty', async () => {
-    ;(github.getOctokit as jest.Mock).mockReturnValue({
+    jest.mocked(github.getOctokit).mockReturnValue({
       rest: {
         repos: {
           getLatestRelease: jest.fn().mockResolvedValue({
@@ -76,7 +80,7 @@ describe('install', () => {
           }),
         },
       },
-    })
+    } as never)
 
     await expect(
       install({ token: 'test-token', owner: 'vulncheck-oss', repo: 'cli' }),

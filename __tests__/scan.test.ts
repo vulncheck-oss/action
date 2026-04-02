@@ -1,4 +1,4 @@
-import type { ScanThreshold, ScanResult } from '../src/types'
+import type { ScanThreshold, ScanResult, ScanResultVuln } from '../src/types'
 import { scan, processThresholds, scanDiff } from '../src/scan'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
@@ -16,7 +16,7 @@ jest.mock('@actions/github', () => ({
   getOctokit: jest.fn(),
 }))
 
-const makeVuln = (overrides = {}) => ({
+const makeVuln = (overrides: Partial<ScanResultVuln> = {}): ScanResultVuln => ({
   name: 'test-pkg',
   version: '1.0.0',
   cve: 'CVE-2021-1234',
@@ -161,9 +161,9 @@ describe('Scan', () => {
     })
 
     it('should handle null vulnerabilities and set success', async () => {
-      ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
-        JSON.stringify({ vulnerabilities: null }),
-      )
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: null }))
 
       const result = await scan()
 
@@ -177,9 +177,9 @@ describe('Scan', () => {
     })
 
     it('should fail when vulnerabilities found with no threshold set', async () => {
-      ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
-        JSON.stringify({ vulnerabilities: [makeVuln()] }),
-      )
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: [makeVuln()] }))
 
       const result = await scan()
 
@@ -305,9 +305,9 @@ describe('Scan', () => {
     })
 
     it('should skip comment when signature matches previous', async () => {
-      ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
-        JSON.stringify({ vulnerabilities: [] }),
-      )
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: [] }))
 
       // Compute what the signature will be for this result
       const crypto = await import('crypto')

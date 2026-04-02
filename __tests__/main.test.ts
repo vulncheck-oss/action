@@ -1,4 +1,3 @@
-import type { ScanResult } from '../src/types'
 import * as core from '@actions/core'
 import * as main from '../src/main'
 import * as installModule from '../src/install'
