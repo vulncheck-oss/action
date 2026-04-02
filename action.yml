@@ -42,5 +42,5 @@ outputs:
   scan-signature:
     description: 'SHA256 hash of the scan results (used to detect change)'
 runs:
-  using: node20
+  using: node24
   main: dist/index.js
