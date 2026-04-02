@@ -10,7 +10,8 @@ jest.mock('fs')
 
 const mockAsset = {
   name: 'vulncheck_1.0.0_linux_amd64.tar.gz',
-  browser_download_url: 'https://example.com/vulncheck_1.0.0_linux_amd64.tar.gz',
+  browser_download_url:
+    'https://example.com/vulncheck_1.0.0_linux_amd64.tar.gz',
   url: 'https://api.github.com/repos/vulncheck-oss/cli/releases/assets/123',
 }
 

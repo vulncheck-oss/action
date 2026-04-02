@@ -201,7 +201,6 @@ describe('Scan', () => {
             return ''
         }
       })
-
       ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
         JSON.stringify({
           vulnerabilities: [makeVuln({ cvss_base_score: '9.0' })],
@@ -228,10 +227,11 @@ describe('Scan', () => {
             return ''
         }
       })
-
       ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
         JSON.stringify({
-          vulnerabilities: [makeVuln({ cvss_base_score: '4.0', cvss_temporal_score: '3.0' })],
+          vulnerabilities: [
+            makeVuln({ cvss_base_score: '4.0', cvss_temporal_score: '3.0' }),
+          ],
         }),
       )
 
@@ -341,7 +341,9 @@ describe('Scan', () => {
         JSON.stringify({ vulnerabilities: currentVulns }),
       )
 
-      const prevResult: ScanResult = { vulnerabilities: [makeVuln({ cve: 'CVE-OLD' })] }
+      const prevResult: ScanResult = {
+        vulnerabilities: [makeVuln({ cve: 'CVE-OLD' })],
+      }
       const oldSig = 'a'.repeat(64)
       const existingBody = `<!-- vulncheck-scan-signature: ${oldSig} -->content<!-- vulncheck-scan-report: ${JSON.stringify(prevResult)} -->`
 
@@ -401,7 +403,6 @@ describe('Scan', () => {
             return ''
         }
       })
-
       ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
         JSON.stringify({
           vulnerabilities: [makeVuln({ cvss_temporal_score: '8.0' })],
@@ -430,14 +431,16 @@ describe('Scan', () => {
             return ''
         }
       })
-
       ;(exec as jest.Mock).mockImplementation(
-        async (_cmd: string, _args: string[], options: { listeners?: { stdout?: (d: Buffer) => void } }) => {
+        async (
+          _cmd: string,
+          _args: string[],
+          options: { listeners?: { stdout?: (d: Buffer) => void } },
+        ) => {
           options?.listeners?.stdout?.(Buffer.from('test-pkg@1.0.0\n'))
           return 0
         },
       )
-
       ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
         JSON.stringify({ vulnerabilities: [makeVuln()] }),
       )
@@ -475,12 +478,19 @@ describe('Scan', () => {
       ;(github.context as { payload: unknown }).payload = {
         pull_request: { number: 42 },
       }
-
       ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
         JSON.stringify({
           vulnerabilities: [
-            makeVuln({ cve: 'CVE-HIGH', cvss_base_score: '9.0', cvss_temporal_score: '8.0' }),
-            makeVuln({ cve: 'CVE-LOW', cvss_base_score: '3.0', cvss_temporal_score: '2.0' }),
+            makeVuln({
+              cve: 'CVE-HIGH',
+              cvss_base_score: '9.0',
+              cvss_temporal_score: '8.0',
+            }),
+            makeVuln({
+              cve: 'CVE-LOW',
+              cvss_base_score: '3.0',
+              cvss_temporal_score: '2.0',
+            }),
           ],
         }),
       )
@@ -494,7 +504,9 @@ describe('Scan', () => {
       const body = mockCreateComment.mock.calls[0][0].body
       expect(body).toContain('CVSS base threshold set to')
       expect(body).toContain('CVSS temporal threshold set to')
-      expect(body).toContain('Vulnerabillites found equal to or above the threshold')
+      expect(body).toContain(
+        'Vulnerabillites found equal to or above the threshold',
+      )
       expect(body).toContain('Vulnerabillites found below the threshold')
     })
 
@@ -515,9 +527,7 @@ describe('Scan', () => {
       })
 
       const prevResult: ScanResult = {
-        vulnerabilities: [
-          makeVuln({ cve: 'CVE-OLD', cvss_base_score: '9.0' }),
-        ],
+        vulnerabilities: [makeVuln({ cve: 'CVE-OLD', cvss_base_score: '9.0' })],
       }
       const oldSig = 'b'.repeat(64)
       const existingBody = `<!-- vulncheck-scan-signature: ${oldSig} -->x<!-- vulncheck-scan-report: ${JSON.stringify(prevResult)} -->`
@@ -526,7 +536,9 @@ describe('Scan', () => {
       ;(github.getOctokit as jest.Mock).mockReturnValue({
         rest: {
           issues: {
-            listComments: jest.fn().mockResolvedValue({ data: [{ body: existingBody }] }),
+            listComments: jest
+              .fn()
+              .mockResolvedValue({ data: [{ body: existingBody }] }),
             createComment: mockCreateComment,
           },
         },
@@ -534,7 +546,6 @@ describe('Scan', () => {
       ;(github.context as { payload: unknown }).payload = {
         pull_request: { number: 42 },
       }
-
       ;(fsPromises.readFile as jest.Mock).mockResolvedValue(
         JSON.stringify({
           vulnerabilities: [
@@ -552,7 +563,9 @@ describe('Scan', () => {
     })
 
     it('should post comment with added-only diff body', async () => {
-      const prevResult: ScanResult = { vulnerabilities: [makeVuln({ cve: 'CVE-SAME' })] }
+      const prevResult: ScanResult = {
+        vulnerabilities: [makeVuln({ cve: 'CVE-SAME' })],
+      }
       const oldSig = 'c'.repeat(64)
       const existingBody = `<!-- vulncheck-scan-signature: ${oldSig} -->x<!-- vulncheck-scan-report: ${JSON.stringify(prevResult)} -->`
 
@@ -560,7 +573,9 @@ describe('Scan', () => {
       ;(github.getOctokit as jest.Mock).mockReturnValue({
         rest: {
           issues: {
-            listComments: jest.fn().mockResolvedValue({ data: [{ body: existingBody }] }),
+            listComments: jest
+              .fn()
+              .mockResolvedValue({ data: [{ body: existingBody }] }),
             createComment: mockCreateComment,
           },
         },
@@ -607,7 +622,9 @@ describe('Scan', () => {
       ;(github.getOctokit as jest.Mock).mockReturnValue({
         rest: {
           issues: {
-            listComments: jest.fn().mockResolvedValue({ data: [{ body: existingBody }] }),
+            listComments: jest
+              .fn()
+              .mockResolvedValue({ data: [{ body: existingBody }] }),
             createComment: mockCreateComment,
           },
         },

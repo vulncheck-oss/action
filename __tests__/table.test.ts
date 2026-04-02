@@ -34,9 +34,7 @@ describe('table', () => {
 
   it('should generate a table without a title', () => {
     const headers = [{ value: 'Col1' }]
-    const tableRows: TableRow[] = [
-      { cells: [{ value: 'Val1' }] },
-    ]
+    const tableRows: TableRow[] = [{ cells: [{ value: 'Val1' }] }]
 
     const result = table(headers, tableRows)
 
@@ -105,14 +103,19 @@ describe('table', () => {
     const tableRows: TableRow[] = [
       {
         cells: [
-          { value: 'CVE-2021-1234', link: 'https://vulncheck.com/browse/cve/CVE-2021-1234' },
+          {
+            value: 'CVE-2021-1234',
+            link: 'https://vulncheck.com/browse/cve/CVE-2021-1234',
+          },
         ],
       },
     ]
 
     const result = table(headers, tableRows)
 
-    expect(result).toContain('[CVE-2021-1234](https://vulncheck.com/browse/cve/CVE-2021-1234)')
+    expect(result).toContain(
+      '[CVE-2021-1234](https://vulncheck.com/browse/cve/CVE-2021-1234)',
+    )
   })
 })
 
