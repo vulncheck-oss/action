@@ -61,9 +61,13 @@ jobs:
           scan-cvss-base-threshold: '11'
 
       - name: Assert Scan Ran
+        env:
+          SCAN_COUNT: ${{ steps.test-action.outputs.scan-count }}
+          SCAN_SIGNATURE: ${{ steps.test-action.outputs.scan-signature }}
+          SCAN_OUTPUT: ${{ steps.test-action.outputs.scan-output }}
         run: |
-          echo "scan-count:     ${{ steps.test-action.outputs.scan-count }}"
-          echo "scan-signature: ${{ steps.test-action.outputs.scan-signature }}"
-          echo "scan-output:    ${{ steps.test-action.outputs.scan-output }}"
-          test -n "${{ steps.test-action.outputs.scan-signature }}"
-          test "${{ steps.test-action.outputs.scan-count }}" -gt 0
+          echo "scan-count:     $SCAN_COUNT"
+          echo "scan-signature: $SCAN_SIGNATURE"
+          echo "scan-output:    $SCAN_OUTPUT"
+          test -n "$SCAN_SIGNATURE"
+          test "$SCAN_COUNT" -gt 0
