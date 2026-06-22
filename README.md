@@ -49,7 +49,7 @@ jobs:
 ### 💅 Customizing
 
 The only required parameter for any command is the `token` parameter. This is
-your VulnCheck API token that can be created in hte portal.
+your VulnCheck API token that can be created in the portal.
 
 > [!Important]
 >
@@ -71,7 +71,7 @@ The following are optional parameters that can be used with the `scan` command
 > comments to split the vulnerabilities into two sections, the first will be
 > results found above the threshold and the second will be results found below.
 
-Below is an example output of annotations if `scan-cve-details` is se to true:
+Below is an example output of annotations if `scan-cve-details` is set to true:
 
 ```
 Notice: CVE-2021-23337 found in npm package lodash in /package-lock.json using javascript-lock-cataloger
