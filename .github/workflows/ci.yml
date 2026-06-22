@@ -43,20 +43,6 @@ jobs:
         id: npm-ci-test
         run: npm run ci-test
 
-      - name: Update Coverage Badge
-        id: coverage-badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npm run coverage
-
-      - name: Commit Coverage Badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add badges/coverage.svg
-          git diff --staged --quiet || git commit -m "chore: update coverage badge"
-          git push
-
   test-action:
     name: GitHub Actions Test
     runs-on: ubuntu-latest
@@ -71,10 +57,17 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
+          scan-path: __tests__/fixtures/scan-target
+          scan-cvss-base-threshold: '11'
 
-      - name: Retrieve Output
-        id: output
+      - name: Assert Scan Ran
+        env:
+          SCAN_COUNT: ${{ steps.test-action.outputs.scan-count }}
+          SCAN_SIGNATURE: ${{ steps.test-action.outputs.scan-signature }}
+          SCAN_OUTPUT: ${{ steps.test-action.outputs.scan-output }}
         run: |
-          echo "${{ steps.test-action.outputs.scan-count }}"
-          echo "${{ steps.test-action.outputs.scan-signature }}"
-          echo "${{ steps.test-action.outputs.scan-output }}"
+          echo "scan-count:     $SCAN_COUNT"
+          echo "scan-signature: $SCAN_SIGNATURE"
+          echo "scan-output:    $SCAN_OUTPUT"
+          test -n "$SCAN_SIGNATURE"
+          test "$SCAN_COUNT" -gt 0

@@ -1,0 +1,9 @@
+{
+  "name": "vulncheck-action-scan-fixture",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fixed scan target for the test-action CI job. Pins a known-vulnerable lodash so the action's end-to-end wiring is exercised deterministically. Do not bump.",
+  "dependencies": {
+    "lodash": "4.17.20"
+  }
+}

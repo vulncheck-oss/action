@@ -16,7 +16,6 @@ into your CI/CD pipeline.
 
 ![CI](https://github.com/vulncheck-oss/action/actions/workflows/ci.yml/badge.svg)
 [![Check dist/](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml/badge.svg)](https://github.com/vulncheck-oss/action/actions/workflows/check-dist.yml)
-[![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 ## 🤸 Usage
 
