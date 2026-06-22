@@ -57,10 +57,13 @@ jobs:
         uses: ./
         with:
           token: ${{ secrets.VC_TOKEN }}
+          scan-path: __tests__/fixtures/scan-target
+          scan-cvss-base-threshold: '11'
 
-      - name: Retrieve Output
-        id: output
+      - name: Assert Scan Ran
         run: |
-          echo "${{ steps.test-action.outputs.scan-count }}"
-          echo "${{ steps.test-action.outputs.scan-signature }}"
-          echo "${{ steps.test-action.outputs.scan-output }}"
+          echo "scan-count:     ${{ steps.test-action.outputs.scan-count }}"
+          echo "scan-signature: ${{ steps.test-action.outputs.scan-signature }}"
+          echo "scan-output:    ${{ steps.test-action.outputs.scan-output }}"
+          test -n "${{ steps.test-action.outputs.scan-signature }}"
+          test "${{ steps.test-action.outputs.scan-count }}" -gt 0
