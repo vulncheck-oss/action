@@ -83,11 +83,11 @@ Notice: CVE-2021-44906 found in npm package minimist in /package-lock.json using
 The `scan` command exposes the following outputs, which can be referenced in
 later steps via `steps.<id>.outputs.<name>`:
 
-| Name             | Description                                                |
-| ---------------- | ---------------------------------------------------------- |
-| `scan-output`    | Results of the scan                                        |
-| `scan-count`     | Number of vulnerabilities found                            |
-| `scan-signature` | SHA256 hash of the scan results (used to detect change)    |
+| Name             | Description                                             |
+| ---------------- | ------------------------------------------------------- |
+| `scan-output`    | Results of the scan                                     |
+| `scan-count`     | Number of vulnerabilities found                         |
+| `scan-signature` | SHA256 hash of the scan results (used to detect change) |
 
 ```yaml
 - uses: vulncheck-oss/action@v1
