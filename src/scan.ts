@@ -40,7 +40,10 @@ export async function scan(): Promise<ScanResult> {
 
   const thresholds = processThresholds(result)
 
-  if (github.context.payload.pull_request) {
+  if (
+    github.context.payload.pull_request &&
+    core.getInput('disable-pr-comment') !== 'true'
+  ) {
     const token = core.getInput('github-token', { required: true })
     const lastComment = await getLastComment(token)
 

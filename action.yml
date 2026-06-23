@@ -34,6 +34,11 @@ inputs:
   scan-cve-npm-rel:
     description: 'Attempt to use npm to trace CVE package to its owner'
     required: false
+  disable-pr-comment:
+    description:
+      'When set to "true", skip posting the scan result as a pull request
+      comment. Useful for self-tests and demos.'
+    required: false
 outputs:
   scan-output:
     description: 'Output results if a scan is run'
