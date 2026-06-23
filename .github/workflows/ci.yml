@@ -59,6 +59,7 @@ jobs:
           token: ${{ secrets.VC_TOKEN }}
           scan-path: __tests__/fixtures/scan-target
           scan-cvss-base-threshold: '11'
+          disable-pr-comment: 'true'
 
       - name: Assert Scan Ran
         env:
