@@ -1,0 +1,51 @@
+name: Move Floating Major Tag
+
+# Keeps `@v1` pointing at the newest v1.x release, as the README documents.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  retag:
+    name: Point the major tag at this release
+    # A plain vX.Y.Z tag can still be flagged prerelease; the flag decides.
+    if: ${{ github.event.release.prerelease == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Move the major tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::notice::$TAG is not a plain vX.Y.Z tag; leaving the major tag alone"
+            exit 0
+          fi
+          MAJOR="v${BASH_REMATCH[1]}"
+
+          git fetch --tags --force --quiet
+
+          # Skip backports: v1.0.5 released after v1.1.5 must not move v1 back.
+          NEWEST=$(git tag --list "${MAJOR}.*" \
+            | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -V | tail -1)
+          if [[ "$NEWEST" != "$TAG" ]]; then
+            echo "::notice::$TAG is not the newest $MAJOR ($NEWEST); leaving $MAJOR alone"
+            exit 0
+          fi
+
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git tag -f "$MAJOR" "$TAG"
+          git push -f origin "refs/tags/$MAJOR"
+          echo "::notice::$MAJOR now points at $TAG"
