@@ -68519,6 +68519,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.scan = scan;
 exports.processThresholds = processThresholds;
 exports.scanDiff = scanDiff;
+exports.unprocessedNote = unprocessedNote;
 const crypto_1 = __importDefault(__nccwpck_require__(6113));
 const exec_1 = __nccwpck_require__(1514);
 const fs = __importStar(__nccwpck_require__(3292));
@@ -68560,7 +68561,13 @@ async function scan() {
             core.info('Same scan result signature matches, skipping comment');
         }
     }
+    // Skipped components are not in the vulnerability count, so a clean-but-
+    // incomplete scan would otherwise read as an unqualified pass.
+    const unprocessed = result.unprocessed ?? [];
     let copy = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`;
+    if (unprocessed.length > 0) {
+        copy += ` | ${unprocessed.length} ${unprocessed.length === 1 ? 'component' : 'components'} could not be assessed`;
+    }
     if (result.vulnerabilities.length > 0) {
         if (thresholds.baseMatches.length > 0) {
             copy += ` | ${thresholds.baseMatches.length} found above or equal to the CVSS base score threshold of ${thresholds.base}`;
@@ -68610,6 +68617,12 @@ async function scan() {
     else {
         result.success = copy;
     }
+    // After the vulnerability logic, so CVE-detail annotations still run.
+    if (unprocessed.length > 0 &&
+        core.getInput('fail-on-unprocessed') === 'true') {
+        result.failed = copy;
+        delete result.success;
+    }
     return result;
 }
 function processThresholds(result) {
@@ -68649,6 +68662,24 @@ function scanDiff(cur, prev) {
     });
     return diff;
 }
+// A large SBOM can skip thousands; output.json carries the full list.
+const unprocessedListLimit = 10;
+// Empty string when nothing was skipped, so complete scans read as before.
+function unprocessedNote(result) {
+    const unprocessed = result.unprocessed ?? [];
+    if (unprocessed.length === 0)
+        return '';
+    const noun = unprocessed.length === 1 ? 'component' : 'components';
+    const verb = unprocessed.length === 1 ? 'was' : 'were';
+    let note = `> [!WARNING]\n> **${unprocessed.length}** ${noun} ${verb} not assessed and ${unprocessed.length === 1 ? 'is' : 'are'} excluded from the total above.\n>\n`;
+    for (const item of unprocessed.slice(0, unprocessedListLimit)) {
+        note += `> - \`${item.purl}\` — ${item.reason}\n`;
+    }
+    if (unprocessed.length > unprocessedListLimit) {
+        note += `> - …and ${unprocessed.length - unprocessedListLimit} more\n`;
+    }
+    return `${note}\n`;
+}
 async function getLastComment(token) {
     if (!github.context.payload.pull_request) {
         return undefined;
@@ -68677,7 +68708,9 @@ async function comment(thresholds, token, output, signature, diff, previous) {
     let body = '';
     const copyTotal = `**${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}`;
     const logo = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" />`;
-    if (diff) {
+    // An empty diff means the signature moved without the CVE set changing; the
+    // branch below would then leave body unassigned.
+    if (diff && diff.length > 0) {
         const added = diff.filter(d => d.added).length;
         const fixed = diff.filter(d => d.removed).length;
         if (added > 0 && fixed > 0)
@@ -68690,6 +68723,7 @@ async function comment(thresholds, token, output, signature, diff, previous) {
     else {
         body = `${logo} VulnCheck has detected a total of ${copyTotal}\n\n`;
     }
+    body += unprocessedNote(output);
     const headers = [
         { value: 'Name' },
         { value: 'Version' },
