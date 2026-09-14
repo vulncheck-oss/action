@@ -68,7 +68,14 @@ export async function scan(): Promise<ScanResult> {
       core.info('Same scan result signature matches, skipping comment')
     }
   }
+  // Skipped components are not in the vulnerability count, so a clean-but-
+  // incomplete scan would otherwise read as an unqualified pass.
+  const unprocessed = result.unprocessed ?? []
   let copy = `VulnCheck has detected ${result.vulnerabilities.length} vulnerabilities`
+
+  if (unprocessed.length > 0) {
+    copy += ` | ${unprocessed.length} ${unprocessed.length === 1 ? 'component' : 'components'} could not be assessed`
+  }
 
   if (result.vulnerabilities.length > 0) {
     if (thresholds.baseMatches.length > 0) {
@@ -132,6 +139,15 @@ export async function scan(): Promise<ScanResult> {
     result.success = copy
   }
 
+  // After the vulnerability logic, so CVE-detail annotations still run.
+  if (
+    unprocessed.length > 0 &&
+    core.getInput('fail-on-unprocessed') === 'true'
+  ) {
+    result.failed = copy
+    delete result.success
+  }
+
   return result
 }
 
@@ -192,6 +208,28 @@ export function scanDiff(
   return diff
 }
 
+// A large SBOM can skip thousands; output.json carries the full list.
+const unprocessedListLimit = 10
+
+// Empty string when nothing was skipped, so complete scans read as before.
+export function unprocessedNote(result: ScanResult): string {
+  const unprocessed = result.unprocessed ?? []
+  if (unprocessed.length === 0) return ''
+
+  const noun = unprocessed.length === 1 ? 'component' : 'components'
+  const verb = unprocessed.length === 1 ? 'was' : 'were'
+  let note = `> [!WARNING]\n> **${unprocessed.length}** ${noun} ${verb} not assessed and ${unprocessed.length === 1 ? 'is' : 'are'} excluded from the total above.\n>\n`
+
+  for (const item of unprocessed.slice(0, unprocessedListLimit)) {
+    note += `> - \`${item.purl}\` — ${item.reason}\n`
+  }
+  if (unprocessed.length > unprocessedListLimit) {
+    note += `> - …and ${unprocessed.length - unprocessedListLimit} more\n`
+  }
+
+  return `${note}\n`
+}
+
 async function getLastComment(token: string): Promise<Comment | undefined> {
   if (!github.context.payload.pull_request) {
     return undefined
@@ -236,7 +274,9 @@ async function comment(
   const copyTotal = `**${output.vulnerabilities.length}** ${output.vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'}`
   const logo = `<img src="https://vulncheck.com/logo.png" alt="logo" height="15px" />`
 
-  if (diff) {
+  // An empty diff means the signature moved without the CVE set changing; the
+  // branch below would then leave body unassigned.
+  if (diff && diff.length > 0) {
     const added = diff.filter(d => d.added).length
     const fixed = diff.filter(d => d.removed).length
     if (added > 0 && fixed > 0)
@@ -248,6 +288,8 @@ async function comment(
   } else {
     body = `${logo} VulnCheck has detected a total of ${copyTotal}\n\n`
   }
+
+  body += unprocessedNote(output)
 
   const headers = [
     { value: 'Name' },

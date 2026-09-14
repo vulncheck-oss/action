@@ -27,10 +27,18 @@ export interface PurlDetail {
   locations: string[]
 }
 
+// Reason is passed through from the API; treat it as an open set.
+export interface UnprocessedPurl {
+  purl: string
+  reason: string
+}
+
 export interface ScanResult {
   vulnerabilities: ScanResultVuln[]
   failed?: string
   success?: string
+  // Omitted when empty: this field alone must not change the hashed document.
+  unprocessed?: UnprocessedPurl[]
 }
 
 export interface ScanResultVulnDiff {

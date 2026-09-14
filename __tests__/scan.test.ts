@@ -1,5 +1,5 @@
 import type { ScanThreshold, ScanResult, ScanResultVuln } from '../src/types'
-import { scan, processThresholds, scanDiff } from '../src/scan'
+import { scan, processThresholds, scanDiff, unprocessedNote } from '../src/scan'
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import * as fsPromises from 'fs/promises'
@@ -648,6 +648,111 @@ describe('Scan', () => {
       const body = mockCreateComment.mock.calls[0][0].body
       expect(body).toContain('fixed')
       expect(body).not.toContain('added')
+    })
+  })
+
+  describe('unprocessed components', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+      ;(github.context as { payload: unknown }).payload = {}
+
+      jest.spyOn(core, 'getInput').mockImplementation(name => {
+        switch (name) {
+          case 'scan-path':
+            return '.'
+          case 'github-token':
+            return 'test-token'
+          default:
+            return ''
+        }
+      })
+    })
+
+    const unprocessed = [
+      { purl: 'pkg:generic/openssl@1.1.1', reason: 'unsupported_type' },
+      { purl: 'not-a-purl-at-all', reason: 'unparseable' },
+    ]
+
+    it('should render nothing when a scan skipped nothing', () => {
+      expect(unprocessedNote({ vulnerabilities: [] })).toBe('')
+      expect(unprocessedNote({ vulnerabilities: [], unprocessed: [] })).toBe('')
+    })
+
+    it('should itemise skipped components with their reasons', () => {
+      const note = unprocessedNote({ vulnerabilities: [], unprocessed })
+
+      expect(note).toContain('**2** components were not assessed')
+      expect(note).toContain('pkg:generic/openssl@1.1.1` — unsupported_type')
+      expect(note).toContain('not-a-purl-at-all` — unparseable')
+    })
+
+    it('should cap the list and report the remainder', () => {
+      const many = Array.from({ length: 14 }, (_, i) => ({
+        purl: `pkg:generic/pkg-${i}@1.0.0`,
+        reason: 'unsupported_type',
+      }))
+
+      const note = unprocessedNote({ vulnerabilities: [], unprocessed: many })
+
+      expect(note).toContain('**14** components were not assessed')
+      expect(note).toContain('pkg:generic/pkg-9@1.0.0')
+      expect(note).not.toContain('pkg:generic/pkg-10@1.0.0')
+      expect(note).toContain('and 4 more')
+    })
+
+    it('should qualify a clean scan that skipped components', async () => {
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: [], unprocessed }))
+
+      const result = await scan()
+
+      expect(result.failed).toBeUndefined()
+      expect(result.success).toContain('0 vulnerabilities')
+      expect(result.success).toContain('2 components could not be assessed')
+    })
+
+    it('should leave a clean complete scan unqualified', async () => {
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: [] }))
+
+      const result = await scan()
+
+      expect(result.success).toBe('VulnCheck has detected 0 vulnerabilities')
+    })
+
+    it('should fail when fail-on-unprocessed is set', async () => {
+      jest.spyOn(core, 'getInput').mockImplementation(name => {
+        switch (name) {
+          case 'scan-path':
+            return '.'
+          case 'fail-on-unprocessed':
+            return 'true'
+          case 'github-token':
+            return 'test-token'
+          default:
+            return ''
+        }
+      })
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: [], unprocessed }))
+
+      const result = await scan()
+
+      expect(result.failed).toContain('2 components could not be assessed')
+      expect(result.success).toBeUndefined()
+    })
+
+    it('should not fail on unprocessed when the input is unset', async () => {
+      jest
+        .mocked(fsPromises.readFile)
+        .mockResolvedValue(JSON.stringify({ vulnerabilities: [], unprocessed }))
+
+      const result = await scan()
+
+      expect(result.failed).toBeUndefined()
     })
   })
 })
