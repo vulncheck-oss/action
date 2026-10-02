@@ -32,13 +32,16 @@ on:
     branches:
       - main
 
-permissions: write-all
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   scan:
     name: Scan with VulnCheck
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
       - uses: vulncheck-oss/action@v1
         with:
           command: scan
@@ -99,9 +102,12 @@ later steps via `steps.<id>.outputs.<name>`:
 
 ### 🔓 Permissions
 
-This action requires the `write-all` permission in order to comment pull
-requests.
+This action needs `pull-requests: write` to comment on pull requests, and
+`contents: read` to check out the repository. If you set
+`disable-pr-comment: true`, `contents: read` is enough.
 
 ```yaml
-permissions: write-all
+permissions:
+  contents: read
+  pull-requests: write
 ```
